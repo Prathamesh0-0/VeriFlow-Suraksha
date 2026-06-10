@@ -1,0 +1,11 @@
+Risk Score: 82%
+
+Decision: REJECT
+
+Reason:
+Income mismatch across documents.
+
+Mismatch Found:
+Salary Slip = ₹77,400
+Employment Letter = ₹77,400
+Loan Application = ₹99,400

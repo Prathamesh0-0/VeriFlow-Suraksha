@@ -1,0 +1,9 @@
+Risk Score: 94%
+
+Decision: REJECT
+
+Reason:
+Document anomaly detected.
+
+Visual inconsistency found in Salary Slip.
+Synthetic tampering test detected.

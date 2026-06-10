@@ -1,0 +1,12 @@
+Risk Score: 91%
+
+Decision: REJECT
+
+Reason:
+Mathematical validation failed.
+
+Gross Pay = ₹89,000
+Total Deductions = ₹11,600
+
+Expected Net Pay = ₹77,400
+Document Net Pay = ₹99,400

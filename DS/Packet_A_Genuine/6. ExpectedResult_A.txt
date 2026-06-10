@@ -1,0 +1,7 @@
+Risk Score: 5%
+
+Decision: APPROVE
+
+Reason:
+All documents are consistent.
+No fraud indicators detected.
