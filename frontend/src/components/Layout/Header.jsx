@@ -1,30 +1,18 @@
 import React from 'react';
-import { Shield, Menu } from 'lucide-react';
 
-export default function Header({ onToggleSidebar }) {
+export default function Header({ activeTab }) {
   return (
-    <header className="flex items-center justify-between h-16 px-6 border-b border-surface-700/50 bg-surface-800/50 backdrop-blur-sm">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onToggleSidebar}
-          className="p-2 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-700/50 transition-colors lg:hidden"
-        >
-          <Menu size={20} />
-        </button>
-        <div className="hidden sm:flex items-center gap-2 text-sm text-text-muted">
-          <Shield size={14} className="text-accent-emerald" />
-          <span className="font-mono text-xs tracking-wider">UNDERWRITING FORENSICS PLATFORM</span>
-        </div>
+    <header className="bg-white border-b border-[#E2E8F0] h-20 px-8 flex items-center justify-between sticky top-0 z-50 flex-shrink-0 font-sans">
+      <div className="text-left">
+        <h1 className="text-xl font-bold text-[#0F172A] tracking-tight">Welcome back, Underwriter</h1>
+        <p className="text-xs text-[#94A3B8] mt-0.5">The dashboard is where you can analyze processing efficacy and stay up-to-date on potential attack surface.</p>
       </div>
-
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-emerald/10 border border-accent-emerald/20">
-          <div className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse" />
-          <span className="text-xs font-medium text-accent-emerald">Engine Online</span>
+      <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-2 bg-[#F8FAFC] border border-[#E2E8F0] px-4 py-2 rounded-xl">
+          <span className="text-[#64748B] font-medium">Testing status:</span>
+          <span className="bg-[#DCFCE7] text-[#15803D] font-bold px-2 py-0.5 rounded-md text-[11px]">Active</span>
         </div>
-        <div className="text-xs font-mono text-text-muted">
-          v1.0.0-proto
-        </div>
+        <div className="w-8 h-8 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-xs shadow-xs">UN</div>
       </div>
     </header>
   );
