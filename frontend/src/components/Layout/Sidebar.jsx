@@ -1,95 +1,96 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Upload, FileSearch, BarChart3, Settings, ChevronLeft, Dna } from 'lucide-react';
 
 const navItems = [
-  { path: '/', label: 'Upload & Analyze', icon: Upload },
-  { path: '/report', label: 'Forensic Report', icon: FileSearch },
+  { path: '/', label: 'Upload Documents' },
+  { path: '/report', label: 'Analysis Report' },
 ];
 
 export default function Sidebar({ open, onToggle }) {
   const location = useLocation();
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: open ? 260 : 72 }}
-      transition={{ duration: 0.3, ease: 'easeInOut' }}
-      className="relative flex flex-col h-full bg-surface-800 border-r border-surface-700/50 z-20"
+    <aside
+      style={{
+        width: open ? 220 : 56,
+        minWidth: open ? 220 : 56,
+        height: '100vh',
+        background: '#fff',
+        borderRight: '1px solid #d1d5db',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'width 0.2s, min-width 0.2s',
+        overflow: 'hidden',
+      }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 h-16 border-b border-surface-700/50">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-accent-cyan to-accent-emerald">
-          <Dna size={22} className="text-white" />
-        </div>
-        <AnimatePresence>
-          {open && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h1 className="text-lg font-bold bg-gradient-to-r from-accent-cyan to-accent-emerald bg-clip-text text-transparent">
-                VeriFlow
-              </h1>
-              <p className="text-[10px] text-text-muted font-mono tracking-wider">FORENSIC ENGINE</p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      <div style={{
+        padding: '14px 16px',
+        borderBottom: '1px solid #d1d5db',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        minHeight: 56,
+      }}>
+        <div style={{
+          width: 28, height: 28,
+          background: '#0056b3', color: '#fff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 13, fontWeight: 700, flexShrink: 0,
+        }}>V</div>
+        {open && (
+          <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1f2937' }}>VeriFlow</div>
+            <div style={{ fontSize: 11, color: '#9ca3af' }}>Document Verification</div>
+          </div>
+        )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-3 space-y-1">
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '12px 0' }}>
         {navItems.map((item) => {
-          const Icon = item.icon;
           const isActive = location.pathname === item.path;
-
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200
-                ${isActive
-                  ? 'bg-accent-cyan/10 text-accent-cyan'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-surface-700/50'
-                }`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '10px 16px',
+                fontSize: 13,
+                fontWeight: isActive ? 600 : 400,
+                color: isActive ? '#0056b3' : '#4b5563',
+                background: isActive ? '#eff6ff' : 'transparent',
+                borderLeft: isActive ? '3px solid #0056b3' : '3px solid transparent',
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
             >
-              <Icon size={20} className={isActive ? 'text-accent-cyan' : ''} />
-              <AnimatePresence>
-                {open && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-sm font-medium whitespace-nowrap"
-                  >
-                    {item.label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-              {isActive && (
-                <motion.div
-                  layoutId="activeIndicator"
-                  className="absolute left-0 w-[3px] h-8 bg-accent-cyan rounded-r-full"
-                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                />
-              )}
+              {open ? item.label : item.label.charAt(0)}
             </NavLink>
           );
         })}
       </nav>
 
-      {/* Collapse button */}
+      {/* Toggle */}
       <button
         onClick={onToggle}
-        className="flex items-center justify-center h-12 border-t border-surface-700/50 text-text-muted hover:text-text-primary transition-colors"
+        style={{
+          padding: '10px',
+          borderTop: '1px solid #d1d5db',
+          background: 'none',
+          border: 'none',
+          borderTop: '1px solid #d1d5db',
+          cursor: 'pointer',
+          color: '#9ca3af',
+          fontSize: 16,
+          textAlign: 'center',
+        }}
       >
-        <motion.div animate={{ rotate: open ? 0 : 180 }} transition={{ duration: 0.3 }}>
-          <ChevronLeft size={18} />
-        </motion.div>
+        {open ? '\u25C0' : '\u25B6'}
       </button>
-    </motion.aside>
+    </aside>
   );
 }

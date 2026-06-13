@@ -12,11 +12,11 @@ export default function App() {
   return (
     <AnalysisProvider>
       <BrowserRouter>
-        <div className="flex h-screen overflow-hidden bg-surface-900">
+        <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#f3f4f6' }}>
           <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
-          <div className="flex flex-col flex-1 overflow-hidden">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <Header onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-            <main className="flex-1 overflow-y-auto p-6">
+            <main style={{ flex: 1, overflow: 'auto', padding: 20 }}>
               <Routes>
                 <Route path="/" element={<UploadPage />} />
                 <Route path="/report" element={<ReportPage />} />

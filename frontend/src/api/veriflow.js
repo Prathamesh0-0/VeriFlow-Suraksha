@@ -34,12 +34,24 @@ export async function uploadDocuments(files, demoMode = null) {
 }
 
 /**
- * Run a demo scenario without uploading files.
- * @param {"clean"|"tampered"} scenario
+ * Fetch available dataset packets.
+ * @returns {Promise<Object>}
+ */
+export async function getDatasets() {
+  const response = await fetch(`${API_BASE}/datasets`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch datasets');
+  }
+  return response.json();
+}
+
+/**
+ * Run analysis on a specific dataset packet.
+ * @param {string} packetId
  * @returns {Promise<Object>} ForensicReport
  */
-export async function runDemo(scenario) {
-  const response = await fetch(`${API_BASE}/demo/${scenario}`, {
+export async function runDatasetDemo(packetId) {
+  const response = await fetch(`${API_BASE}/demo/${packetId}`, {
     method: 'POST',
   });
 

@@ -71,8 +71,16 @@ async def system_info():
     # Check PyMuPDF availability
     pymupdf_available = False
     try:
-        import fitz
+        import pymupdf
         pymupdf_available = True
+    except Exception:
+        pass
+
+    # Check EasyOCR availability
+    easyocr_available = False
+    try:
+        import easyocr
+        easyocr_available = True
     except Exception:
         pass
 
@@ -80,5 +88,6 @@ async def system_info():
         "tesseract": tesseract_available,
         "opencv": opencv_available,
         "pymupdf": pymupdf_available,
-        "demo_mode_recommended": not tesseract_available,
+        "easyocr": easyocr_available,
+        "ocr_ready": tesseract_available or easyocr_available,
     }

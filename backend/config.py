@@ -7,10 +7,17 @@ from pathlib import Path
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BASE_DIR.parent
 UPLOAD_DIR = BASE_DIR / "uploads"
 HEATMAP_DIR = BASE_DIR / "heatmaps"
+DATASET_DIR = PROJECT_ROOT / "DS"
 UPLOAD_DIR.mkdir(exist_ok=True)
 HEATMAP_DIR.mkdir(exist_ok=True)
+
+# ─── AI Integration ─────────────────────────────────────────────────────────
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6LexUE4QvrDmge0SEe7_Gvfa8dcskKOZRG6qWy7HVpWoQ")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
+
 
 # ─── Upload Constraints ─────────────────────────────────────────────────────
 MAX_FILE_SIZE_MB = 25
@@ -40,6 +47,7 @@ SUSPICIOUS_PRODUCERS = [
     "pdfelement",
     "ilovepdf",
     "smallpdf",
+    "canva",
     "sejda",
     "pdf-xchange",
     "inkscape",

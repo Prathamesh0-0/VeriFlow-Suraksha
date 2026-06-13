@@ -23,6 +23,8 @@ class DocumentType(str, Enum):
     BANK_STATEMENT = "bank_statement"
     ITR_FORM = "itr_form"
     LAND_RECORD = "land_record"
+    EMPLOYMENT_VERIFICATION = "employment_verification"
+    LOAN_APPLICATION = "loan_application"
     UNKNOWN = "unknown"
 
 
@@ -200,6 +202,24 @@ class TaxValidationResult(BaseModel):
     notes: list[str] = []
 
 
+# ─── AI Analysis Models ──────────────────────────────────────────────────────
+
+class AIFlag(BaseModel):
+    """A flag identified by AI analysis."""
+    severity: str = "medium"
+    category: str = "General"
+    description: str = ""
+
+
+class AIAnalysisResult(BaseModel):
+    """Result from AI (Gemini) document analysis."""
+    verdict: str = "suspicious"
+    confidence: float = Field(ge=0, le=1.0, default=0.5)
+    risk_score: float = Field(ge=0, le=100, default=50)
+    reasoning: str = ""
+    flags: list[AIFlag] = []
+
+
 # ─── Aggregate Report ────────────────────────────────────────────────────────
 
 class DocumentReport(BaseModel):
@@ -220,6 +240,7 @@ class ForensicReport(BaseModel):
     document_reports: list[DocumentReport] = []
     coherence: Optional[CoherenceResult] = None
     tax_validation: Optional[TaxValidationResult] = None
+    ai_analysis: Optional[AIAnalysisResult] = None
     overall_risk_score: float = Field(ge=0, le=100)
     overall_verdict: Verdict
     summary: str

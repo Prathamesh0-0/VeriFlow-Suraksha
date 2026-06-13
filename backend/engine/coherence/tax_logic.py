@@ -111,8 +111,8 @@ def validate_tax(
     # Extract stated values
     gross_field = _find_field(salary_doc, "gross_salary")
     basic_field = _find_field(salary_doc, "basic_pay")
-    tds_field = _find_field(salary_doc, "tds")
-    pf_field = _find_field(salary_doc, "pf_deduction")
+    tds_field = _find_field(salary_doc, "income_tax") or _find_field(salary_doc, "tds")
+    pf_field = _find_field(salary_doc, "provident_fund") or _find_field(salary_doc, "pf_deduction")
     net_field = _find_field(salary_doc, "net_pay")
 
     stated_gross = gross_field.numeric_value if gross_field else None

@@ -1,179 +1,162 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dna, ChevronDown, ChevronRight, AlertTriangle, CheckCircle2, FileText, Type, Ruler, Space } from 'lucide-react';
 
-const severityColors = {
-  critical: 'accent-red',
-  high: 'accent-amber',
-  medium: 'accent-purple',
-  low: 'text-muted',
-};
-
-function VerdictBadge({ verdict }) {
-  const cls = verdict === 'clean' ? 'badge-clean' : verdict === 'suspicious' ? 'badge-suspicious' : 'badge-tampered';
-  return (
-    <span className={`px-2 py-0.5 rounded text-xs font-mono font-bold ${cls}`}>
-      {verdict?.toUpperCase()}
-    </span>
-  );
+function SeverityBadge({ severity }) {
+  const cls = `sev-${severity || 'low'}`;
+  return <span className={cls}>{(severity || 'low').toUpperCase()}</span>;
 }
 
-function AnomalyRow({ anomaly, type }) {
-  const color = severityColors[anomaly.severity] || 'text-muted';
-  const icon = type === 'font' ? Type : type === 'coordinate' ? Ruler : Space;
-  const Icon = icon;
-
-  return (
-    <div className="flex items-start gap-3 p-3 rounded-lg bg-surface-800/30 border border-surface-700/20">
-      <div className={`mt-0.5 text-${color}`}>
-        <Icon size={14} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className={`text-xs font-mono px-1.5 py-0.5 rounded bg-${color}/10 text-${color}`}>
-            {anomaly.severity?.toUpperCase()}
-          </span>
-          <span className="text-xs text-text-muted">Page {anomaly.page}</span>
-        </div>
-        <p className="text-sm text-text-secondary leading-relaxed">{anomaly.description}</p>
-      </div>
-    </div>
-  );
-}
-
-function DocumentSection({ docReport }) {
-  const [expanded, setExpanded] = useState(true);
+function DocumentSection({ docReport, index }) {
+  const [open, setOpen] = useState(index === 0);
   const sg = docReport.syntax_geometry;
   const chrono = docReport.chronological;
 
-  const totalAnomalies =
-    (sg?.font_anomalies?.length || 0) +
-    (sg?.coordinate_anomalies?.length || 0) +
-    (sg?.spacing_anomalies?.length || 0) +
-    (chrono?.metadata_flags?.filter(f => f.severity !== 'low')?.length || 0);
+  const anomalies = [
+    ...(sg?.font_anomalies || []).map(a => ({ ...a, type: 'Font' })),
+    ...(sg?.coordinate_anomalies || []).map(a => ({ ...a, type: 'Coordinate' })),
+    ...(sg?.spacing_anomalies || []).map(a => ({ ...a, type: 'Spacing' })),
+    ...(chrono?.metadata_flags?.filter(f => f.severity !== 'low') || []).map(f => ({
+      severity: f.severity, page: 1, description: f.description, type: 'Metadata',
+    })),
+  ];
+
+  const verdict = sg?.verdict || chrono?.verdict || 'clean';
 
   return (
-    <div className="glass-panel-light overflow-hidden">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-4 hover:bg-surface-700/20 transition-colors"
+    <div style={{ marginBottom: 12, border: '1px solid #d1d5db', background: '#fff' }}>
+      <div
+        onClick={() => setOpen(!open)}
+        style={{
+          padding: '10px 14px',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          cursor: 'pointer', background: '#f9fafb', borderBottom: open ? '1px solid #d1d5db' : 'none',
+        }}
       >
-        <div className="flex items-center gap-3">
-          <FileText size={16} className="text-accent-cyan" />
-          <span className="text-sm font-medium text-text-primary">{docReport.document_name}</span>
-          <span className="text-xs font-mono text-text-muted px-2 py-0.5 rounded bg-surface-700/30">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ fontWeight: 600, fontSize: 13 }}>
+            {index + 1}. {docReport.document_name}
+          </span>
+          <span style={{ fontSize: 11, color: '#6b7280', textTransform: 'uppercase' }}>
             {docReport.document_type?.replace('_', ' ')}
           </span>
-          {sg && <VerdictBadge verdict={sg.verdict} />}
+          <span className={verdict === 'clean' ? 'status-pass' : verdict === 'suspicious' ? 'status-warn' : 'status-fail'}
+                style={{ fontSize: 12 }}>
+            {verdict.toUpperCase()}
+          </span>
         </div>
-        <div className="flex items-center gap-3">
-          {totalAnomalies > 0 && (
-            <span className="text-xs font-mono text-accent-amber">
-              {totalAnomalies} anomal{totalAnomalies === 1 ? 'y' : 'ies'}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {anomalies.length > 0 && (
+            <span style={{ fontSize: 12, color: '#b91c1c', fontWeight: 600 }}>
+              {anomalies.length} issue{anomalies.length !== 1 ? 's' : ''}
             </span>
           )}
-          {expanded ? <ChevronDown size={16} className="text-text-muted" /> : <ChevronRight size={16} className="text-text-muted" />}
+          <span style={{ fontSize: 12, color: '#9ca3af' }}>{open ? '▼' : '▶'}</span>
         </div>
-      </button>
+      </div>
 
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="px-4 pb-4 space-y-4"
-          >
-            {/* Syntax Geometry Results */}
-            {sg && (
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-mono text-text-muted tracking-wider">SYNTAX GEOMETRY</h4>
-                  <span className="text-xs font-mono text-text-muted">
-                    Score: <span className={sg.risk_score > 25 ? 'text-accent-red' : 'text-accent-emerald'}>{sg.risk_score}</span>/100
+      {open && (
+        <div style={{ padding: 14 }}>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
+            {/* Left: Structure */}
+            <div style={{ flex: 1, minWidth: 300 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#374151' }}>
+                STRUCTURE ANALYSIS
+                {sg && (
+                  <span style={{ marginLeft: 12, fontWeight: 400, color: '#6b7280' }}>
+                    Risk: <span style={{ fontWeight: 600, color: (sg.risk_score || 0) > 25 ? '#b91c1c' : '#15803d' }}>
+                      {sg.risk_score || 0}/100
+                    </span>
                   </span>
-                </div>
+                )}
+              </div>
 
-                {/* Font stats */}
-                {sg.fonts_detected?.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {sg.fonts_detected.slice(0, 6).map((f, i) => (
-                      <span key={i} className="text-xs font-mono px-2 py-1 rounded bg-surface-700/30 text-text-secondary">
-                        {f.name} <span className="text-text-muted">×{f.pages_used || f.usage_count}</span>
-                      </span>
+              {sg?.fonts_detected?.length > 0 && (
+                <div style={{ marginBottom: 10, fontSize: 12, color: '#6b7280' }}>
+                  Fonts: {sg.fonts_detected.slice(0, 5).map(f => f.name).join(', ')}
+                </div>
+              )}
+
+              {anomalies.filter(a => a.type !== 'Metadata').length > 0 ? (
+                <table style={{ fontSize: 12 }}>
+                  <thead>
+                    <tr><th>Severity</th><th>Type</th><th>Page</th><th>Description</th></tr>
+                  </thead>
+                  <tbody>
+                    {anomalies.filter(a => a.type !== 'Metadata').map((a, i) => (
+                      <tr key={i}>
+                        <td><SeverityBadge severity={a.severity} /></td>
+                        <td>{a.type}</td>
+                        <td>{a.page}</td>
+                        <td>{a.description}</td>
+                      </tr>
                     ))}
-                  </div>
-                )}
-
-                {/* Anomalies */}
-                <div className="space-y-2">
-                  {sg.font_anomalies?.map((a, i) => <AnomalyRow key={`f-${i}`} anomaly={a} type="font" />)}
-                  {sg.coordinate_anomalies?.map((a, i) => <AnomalyRow key={`c-${i}`} anomaly={a} type="coordinate" />)}
-                  {sg.spacing_anomalies?.map((a, i) => <AnomalyRow key={`s-${i}`} anomaly={a} type="spacing" />)}
+                  </tbody>
+                </table>
+              ) : (
+                <div style={{ padding: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 12, color: '#15803d' }}>
+                  No structural anomalies detected.
                 </div>
+              )}
+            </div>
 
-                {totalAnomalies === 0 && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-accent-emerald/5">
-                    <CheckCircle2 size={14} className="text-accent-emerald" />
-                    <span className="text-xs text-accent-emerald">No structural anomalies detected</span>
-                  </div>
+            {/* Right: Metadata */}
+            <div style={{ flex: 1, minWidth: 280 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#374151' }}>
+                METADATA FORENSICS
+                {chrono && (
+                  <span style={{ marginLeft: 12 }} className={chrono.verdict === 'clean' ? 'status-pass' : 'status-fail'}>
+                    {chrono.verdict?.toUpperCase()}
+                  </span>
                 )}
               </div>
-            )}
 
-            {/* Chronological Results */}
-            {chrono && (
-              <div className="space-y-2 pt-3 border-t border-surface-700/30">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-mono text-text-muted tracking-wider">CHRONOLOGICAL FORENSICS</h4>
-                  <VerdictBadge verdict={chrono.verdict} />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: 'Created', value: chrono.creation_date || 'N/A' },
-                    { label: 'Modified', value: chrono.modification_date || 'N/A' },
-                    { label: 'Producer', value: chrono.producer || 'N/A' },
-                    { label: 'Timezone', value: chrono.timezone_found || 'N/A', ok: chrono.timezone_valid },
-                  ].map((item, i) => (
-                    <div key={i} className="p-2 rounded-lg bg-surface-800/30">
-                      <span className="text-[10px] text-text-muted">{item.label}</span>
-                      <p className={`text-xs font-mono ${
-                        item.ok === false ? 'text-accent-red' :
-                        item.ok === true ? 'text-accent-emerald' : 'text-text-secondary'
-                      } truncate`}>
-                        {item.value}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {chrono.metadata_flags?.filter(f => f.severity !== 'low').map((flag, i) => (
-                  <AnomalyRow key={`mf-${i}`} anomaly={{ ...flag, page: 1 }} type="font" />
-                ))}
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+              {chrono ? (
+                <>
+                  <table style={{ fontSize: 12, marginBottom: 8 }}>
+                    <tbody>
+                      <tr><th>Created</th><td>{chrono.creation_date || 'N/A'}</td></tr>
+                      <tr><th>Modified</th><td>{chrono.modification_date || 'N/A'}</td></tr>
+                      <tr><th>Producer</th><td>{chrono.producer || 'N/A'}</td></tr>
+                      <tr>
+                        <th>Timezone</th>
+                        <td className={chrono.timezone_valid === false ? 'status-fail' : chrono.timezone_valid === true ? 'status-pass' : ''}>
+                          {chrono.timezone_found || 'N/A'}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  {anomalies.filter(a => a.type === 'Metadata').length > 0 && (
+                    <table style={{ fontSize: 12 }}>
+                      <thead><tr><th>Severity</th><th>Issue</th></tr></thead>
+                      <tbody>
+                        {anomalies.filter(a => a.type === 'Metadata').map((a, i) => (
+                          <tr key={i}>
+                            <td><SeverityBadge severity={a.severity} /></td>
+                            <td>{a.description}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </>
+              ) : (
+                <div style={{ color: '#9ca3af', fontSize: 12 }}>No metadata extracted.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default function StructuralDNA({ report }) {
+  if (!report.document_reports?.length) return null;
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Dna size={18} className="text-accent-cyan" />
-        <h2 className="text-lg font-bold text-text-primary">Layer 1: Structural DNA Analysis</h2>
-      </div>
-
-      <div className="space-y-3">
-        {report.document_reports?.map((dr, i) => (
-          <DocumentSection key={i} docReport={dr} />
-        ))}
-      </div>
+    <div style={{ marginBottom: 20 }}>
+      <div className="section-title">Document Structure Analysis</div>
+      {report.document_reports.map((dr, i) => (
+        <DocumentSection key={i} docReport={dr} index={i} />
+      ))}
     </div>
   );
 }
