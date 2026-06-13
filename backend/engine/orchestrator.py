@@ -12,8 +12,6 @@ from pathlib import Path
 from typing import Optional
 
 from engine.models import (
-    AIAnalysisResult,
-    AIFlag,
     DocumentReport,
     DocumentType,
     ForensicReport,
@@ -22,7 +20,6 @@ from engine.models import (
 )
 from engine.structural_dna import syntax_geometry, chronological, ela
 from engine.coherence import ocr_extractor, cross_document, tax_logic
-from engine import ai_analyzer
 from config import (
     WEIGHT_SYNTAX_GEOMETRY,
     WEIGHT_CHRONOLOGICAL,
@@ -30,10 +27,6 @@ from config import (
     WEIGHT_CROSS_DOCUMENT,
     WEIGHT_TAX_LOGIC,
 )
-
-# ─── Global AI Task Store ───────────────────────────────────────────────────
-AI_TASK_STORE: dict[str, dict] = {}
-
 
 def _classify_document_type(filename: str) -> DocumentType:
     """Quick document type classification from filename."""
@@ -137,30 +130,6 @@ def _generate_summary(report: ForensicReport) -> str:
             f"Immediate escalation recommended. "
             f"Processing completed in {report.processing_time_seconds:.1f}s."
         )
-
-
-async def run_ai_background(packet_id: str, all_doc_fields: list, extracted_texts: dict):
-    """Run Gemini analysis in the background and store the result."""
-    import logging
-    logger = logging.getLogger("veriflow.orchestrator")
-    AI_TASK_STORE[packet_id] = {"status": "processing"}
-    try:
-        ai_raw = await ai_analyzer.analyze(all_doc_fields, extracted_texts)
-        if ai_raw:
-            ai_result = AIAnalysisResult(
-                verdict=ai_raw.get("verdict", "suspicious"),
-                confidence=ai_raw.get("confidence", 0.5),
-                risk_score=ai_raw.get("risk_score", 50),
-                reasoning=ai_raw.get("reasoning", ""),
-                flags=[AIFlag(**f) for f in ai_raw.get("flags", [])],
-            )
-            AI_TASK_STORE[packet_id] = {"status": "completed", "result": ai_result.model_dump()}
-        else:
-            AI_TASK_STORE[packet_id] = {"status": "failed", "error": "No response from Gemini"}
-    except Exception as e:
-        logger.warning(f"Background AI analysis failed: {e}")
-        AI_TASK_STORE[packet_id] = {"status": "failed", "error": str(e)}
-
 
 async def analyze_packet(
     file_paths: list[str],
@@ -281,13 +250,6 @@ async def analyze_packet(
     component_scores["tax_logic"] = tax_result.risk_score
 
     # ═══════════════════════════════════════════════════════════════════════
-    # PHASE 2b: AI Analysis (Gemini) - Spawning Background Task
-    # ═══════════════════════════════════════════════════════════════════════
-    await _report_progress("ai", "Spawning AI analysis in background")
-    asyncio.create_task(run_ai_background(packet_id, all_doc_fields, extracted_texts))
-    ai_result = None  # Will be polled by the frontend
-
-    # ═══════════════════════════════════════════════════════════════════════
     # PHASE 3: Aggregate and Report
     # ═══════════════════════════════════════════════════════════════════════
 
@@ -308,7 +270,6 @@ async def analyze_packet(
         document_reports=document_reports,
         coherence=coherence_result,
         tax_validation=tax_result,
-        ai_analysis=ai_result,
         overall_risk_score=overall_score,
         overall_verdict=overall_verdict,
         summary="",

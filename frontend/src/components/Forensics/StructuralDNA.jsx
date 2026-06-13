@@ -76,21 +76,23 @@ function DocumentSection({ docReport, index }) {
               )}
 
               {anomalies.filter(a => a.type !== 'Metadata').length > 0 ? (
-                <table style={{ fontSize: 12 }}>
-                  <thead>
-                    <tr><th>Severity</th><th>Type</th><th>Page</th><th>Description</th></tr>
-                  </thead>
-                  <tbody>
-                    {anomalies.filter(a => a.type !== 'Metadata').map((a, i) => (
-                      <tr key={i}>
-                        <td><SeverityBadge severity={a.severity} /></td>
-                        <td>{a.type}</td>
-                        <td>{a.page}</td>
-                        <td>{a.description}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <div style={{ overflowY: 'auto', maxHeight: '300px', paddingRight: '4px' }}>
+                  <table style={{ fontSize: 12, margin: 0 }}>
+                    <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                      <tr><th>Severity</th><th>Type</th><th>Page</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                      {anomalies.filter(a => a.type !== 'Metadata').map((a, i) => (
+                        <tr key={i}>
+                          <td><SeverityBadge severity={a.severity} /></td>
+                          <td>{a.type}</td>
+                          <td>{a.page}</td>
+                          <td>{a.description}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <div style={{ padding: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 12, color: '#15803d' }}>
                   No structural anomalies detected.

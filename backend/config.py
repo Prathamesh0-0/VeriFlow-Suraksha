@@ -14,9 +14,6 @@ DATASET_DIR = PROJECT_ROOT / "DS"
 UPLOAD_DIR.mkdir(exist_ok=True)
 HEATMAP_DIR.mkdir(exist_ok=True)
 
-# ─── AI Integration ─────────────────────────────────────────────────────────
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6LexUE4QvrDmge0SEe7_Gvfa8dcskKOZRG6qWy7HVpWoQ")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash")
 
 
 # ─── Upload Constraints ─────────────────────────────────────────────────────

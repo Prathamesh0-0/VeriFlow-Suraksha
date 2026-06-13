@@ -14,16 +14,9 @@ from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 from fastapi.responses import JSONResponse
 
 from config import UPLOAD_DIR, MAX_FILE_SIZE_MB, ALLOWED_MIME_TYPES, DATASET_DIR
-from engine.orchestrator import analyze_packet, AI_TASK_STORE
+from engine.orchestrator import analyze_packet
 
 router = APIRouter(prefix="/api", tags=["upload"])
-
-@router.get("/ai-status/{packet_id}")
-async def get_ai_status(packet_id: str):
-    """Poll for the background AI analysis status."""
-    if packet_id not in AI_TASK_STORE:
-        return JSONResponse(status_code=404, content={"status": "not_found"})
-    return AI_TASK_STORE[packet_id]
 
 # ─── Dataset Packet Mapping ─────────────────────────────────────────────────
 

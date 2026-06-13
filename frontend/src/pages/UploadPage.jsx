@@ -37,8 +37,7 @@ export default function UploadPage() {
       { progress: 40, message: 'Running OCR extraction...' },
       { progress: 55, message: 'Extracting financial fields...' },
       { progress: 70, message: 'Cross-document validation...' },
-      { progress: 80, message: 'Tax recalculation...' },
-      { progress: 90, message: 'Running AI analysis...' },
+      { progress: 85, message: 'Tax recalculation...' },
       { progress: 95, message: 'Generating report...' },
     ];
     for (const s of stages) {
