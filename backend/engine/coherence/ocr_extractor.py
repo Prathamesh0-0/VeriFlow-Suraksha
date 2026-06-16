@@ -164,8 +164,9 @@ def _ocr_image_pdf(file_path: str) -> str:
     try:
         doc = fitz.open(file_path)
         all_text = []
-        for page in doc:
-            pix = page.get_pixmap(dpi=200)
+        for i in range(min(len(doc), 3)):  # Limit to first 3 pages for speed
+            page = doc[i]
+            pix = page.get_pixmap(dpi=150)  # Reduced DPI for faster CPU OCR
             img = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
             if pix.n == 4:
                 img = img[:, :, :3]

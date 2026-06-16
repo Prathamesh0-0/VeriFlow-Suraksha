@@ -122,6 +122,23 @@ async def upload_and_analyze(
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
+@router.get("/ai-status/{packet_id}")
+async def get_ai_status(packet_id: str):
+    """Poll for background offline AI analysis completion."""
+    from engine.orchestrator import AI_TASK_STORE
+    task = AI_TASK_STORE.get(packet_id)
+    
+    if not task:
+        return JSONResponse({"status": "processing"})
+        
+    if task["status"] == "complete":
+        return JSONResponse({"status": "complete", "result": task["result"].dict()})
+    elif task["status"] == "error":
+        return JSONResponse({"status": "error", "error": task["error"]})
+        
+    return JSONResponse({"status": "processing"})
+
+
 @router.get("/datasets")
 async def list_datasets():
     """List available dataset packets for testing."""

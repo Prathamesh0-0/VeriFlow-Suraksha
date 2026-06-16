@@ -130,6 +130,17 @@ class ELAResult(BaseModel):
     original_image_path: Optional[str] = None
     verdict: Verdict
 
+class AIFlag(BaseModel):
+    severity: Severity
+    description: str
+    affected_document: Optional[str] = None
+
+class AIAnalysisResult(BaseModel):
+    summary: str
+    suspicion_score: int
+    flags: list[AIFlag]
+    is_suspicious: bool
+
 
 # ─── Layer 2: Coherence Engine Models ────────────────────────────────────────
 
@@ -222,6 +233,11 @@ class ForensicReport(BaseModel):
     document_reports: list[DocumentReport] = []
     coherence: Optional[CoherenceResult] = None
     tax_validation: Optional[TaxValidationResult] = None
+    
+    # Optional AI Analysis
+    ai_analysis: Optional[AIAnalysisResult] = None
+
+    # Aggregated Summary
     overall_risk_score: float = Field(ge=0, le=100)
     overall_verdict: Verdict
     summary: str

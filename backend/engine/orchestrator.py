@@ -20,6 +20,7 @@ from engine.models import (
 )
 from engine.structural_dna import syntax_geometry, chronological, ela
 from engine.coherence import ocr_extractor, cross_document, tax_logic
+from engine import local_ai
 from config import (
     WEIGHT_SYNTAX_GEOMETRY,
     WEIGHT_CHRONOLOGICAL,
@@ -44,6 +45,29 @@ def _classify_document_type(filename: str) -> DocumentType:
     elif any(k in lower for k in ["land", "property", "registry", "deed"]):
         return DocumentType.LAND_RECORD
     return DocumentType.UNKNOWN
+
+
+# Global store for async AI analysis results
+AI_TASK_STORE: dict[str, dict] = {}
+
+async def run_ai_background(packet_id: str, extracted_data: dict, file_names: list[str]):
+    """Run local AI offline in the background so it doesn't block the UI."""
+    AI_TASK_STORE[packet_id] = {"status": "processing", "result": None}
+    
+    # Run the heavy CPU bound LLM task in a thread pool so it doesn't block asyncio
+    loop = asyncio.get_running_loop()
+    try:
+        ai_result = await loop.run_in_executor(
+            None, 
+            local_ai.analyze_extracted_data, 
+            extracted_data, 
+            file_names
+        )
+        AI_TASK_STORE[packet_id] = {"status": "complete", "result": ai_result}
+    except Exception as e:
+        import logging
+        logging.error(f"Background AI task failed: {e}")
+        AI_TASK_STORE[packet_id] = {"status": "error", "error": str(e)}
 
 
 def _compute_weighted_score(scores: dict[str, float]) -> float:
@@ -278,5 +302,16 @@ async def analyze_packet(
 
     report.flags_count = _count_flags(report)
     report.summary = _generate_summary(report)
+
+    # Spawn local AI task in background
+    # We pass the extracted text/fields for the LLM to review
+    ai_input_data = {}
+    for doc in document_reports:
+        if doc.extracted_fields:
+            ai_input_data[doc.document_name] = [
+                {f.field_name: f.value} for f in doc.extracted_fields.fields
+            ]
+            
+    asyncio.create_task(run_ai_background(packet_id, ai_input_data, file_names))
 
     return report

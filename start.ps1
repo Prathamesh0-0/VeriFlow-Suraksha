@@ -6,7 +6,7 @@ Write-Host "Starting VeriFlow Project..." -ForegroundColor Green
 
 # Start Backend in a new window
 Write-Host "Starting Backend on http://127.0.0.1:8000..." -ForegroundColor Cyan
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; & '..\pymupdf-venv\Scripts\python.exe' -m uvicorn main:app --reload"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd backend; & '..\gpu-venv\Scripts\python.exe' -m uvicorn main:app --reload"
 
 # Start Frontend in a new window
 Write-Host "Starting Frontend on http://localhost:5173..." -ForegroundColor Cyan

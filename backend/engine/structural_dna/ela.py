@@ -309,7 +309,7 @@ def analyze_all_pages(file_path: str, document_name: str) -> list[ELAResult]:
     except Exception:
         return [analyze(file_path, document_name, page_num=0)]
 
-    for p in range(page_count):
+    for p in range(min(page_count, 3)):  # Limit ELA to first 3 pages for speed
         results.append(analyze(file_path, document_name, page_num=p))
 
     return results

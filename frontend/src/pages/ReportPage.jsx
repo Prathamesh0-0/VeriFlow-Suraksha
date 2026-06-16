@@ -6,6 +6,7 @@ import StructuralDNA from '../components/Forensics/StructuralDNA.jsx';
 import ELAViewer from '../components/Forensics/ELAViewer.jsx';
 import CoherenceMatrix from '../components/Coherence/CoherenceMatrix.jsx';
 import TaxRecalculation from '../components/Coherence/TaxRecalculation.jsx';
+import AIAnalysisPanel from '../components/Dashboard/AIAnalysisPanel.jsx';
 
 export default function ReportPage() {
   const { state, dispatch } = useAnalysis();
@@ -52,9 +53,16 @@ export default function ReportPage() {
         {report.summary}
       </div>
 
-      {/* Main content */}
-      <div style={{ marginBottom: 20 }}>
-        <OverviewPanel report={report} />
+      {/* Main content — two-column layout for Engine vs AI */}
+      <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 20 }}>
+        {/* Left: Engine results */}
+        <div style={{ flex: 2, minWidth: 500 }}>
+          <OverviewPanel report={report} />
+        </div>
+        {/* Right: AI analysis */}
+        <div style={{ flex: 1, minWidth: 350 }}>
+          <AIAnalysisPanel aiAnalysis={report.ai_analysis} packetId={report.packet_id} />
+        </div>
       </div>
 
       {/* Detailed sections */}

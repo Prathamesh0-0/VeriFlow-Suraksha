@@ -91,3 +91,16 @@ export function getHeatmapUrl(filename) {
   const basename = filename.split(/[/\\]/).pop();
   return `/heatmaps/${basename}`;
 }
+
+/**
+ * Poll for background offline AI analysis completion.
+ * @param {string} packetId 
+ * @returns {Promise<Object>}
+ */
+export async function getAIStatus(packetId) {
+  const response = await fetch(`${API_BASE}/ai-status/${packetId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch AI status');
+  }
+  return response.json();
+}
