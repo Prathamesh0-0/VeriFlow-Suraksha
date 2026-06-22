@@ -303,15 +303,28 @@ async def analyze_packet(
     report.flags_count = _count_flags(report)
     report.summary = _generate_summary(report)
 
-    # Spawn local AI task in background
-    # We pass the extracted text/fields for the LLM to review
+    # Run the deterministic forensic intelligence engine SYNCHRONOUSLY.
+    # Since it's now a pure rule-based system (no LLM), it completes in milliseconds.
+    # Results are included directly in the report, not just available via polling.
     ai_input_data = {}
     for doc in document_reports:
         if doc.extracted_fields:
             ai_input_data[doc.document_name] = [
                 {f.field_name: f.value} for f in doc.extracted_fields.fields
             ]
-            
-    asyncio.create_task(run_ai_background(packet_id, ai_input_data, file_names))
+
+    try:
+        import logging
+        ai_logger = logging.getLogger("veriflow.orchestrator")
+        ai_logger.info(f"Running forensic intelligence engine on {len(ai_input_data)} documents...")
+        ai_result = local_ai.analyze_extracted_data(ai_input_data, file_names)
+        report.ai_analysis = ai_result
+        # Also store in AI_TASK_STORE for any polling clients
+        AI_TASK_STORE[packet_id] = {"status": "complete", "result": ai_result}
+        ai_logger.info(f"Forensic engine complete: score={ai_result.suspicion_score}, flags={len(ai_result.flags)}")
+    except Exception as e:
+        import logging
+        logging.getLogger("veriflow.orchestrator").error(f"Forensic engine failed: {e}")
+        AI_TASK_STORE[packet_id] = {"status": "error", "error": str(e)}
 
     return report

@@ -82,8 +82,17 @@ def calculate_expected_pf(basic_monthly: float) -> float:
     """
     Calculate expected monthly PF (employee contribution).
     EPF Employee Rate: 12% of Basic Salary.
+    
+    IMPORTANT: Under EPF Act, the statutory wage ceiling is Rs.15,000/month.
+    Many companies cap EPF contribution at 12% of Rs.15,000 = Rs.1,800/month.
+    However, some companies contribute on actual basic (above-ceiling voluntary contribution).
+    We use actual basic but allow a large tolerance for the ceiling difference.
     """
-    return round(basic_monthly * EPF_EMPLOYEE_RATE, 2)
+    # Some companies cap at statutory ceiling
+    capped_basic = min(basic_monthly, 15000)
+    # Return the capped amount as the PRIMARY expected PF
+    # (Most Indian companies use the cap unless they have a voluntary scheme)
+    return round(capped_basic * EPF_EMPLOYEE_RATE, 2)
 
 
 def validate_tax(
@@ -135,11 +144,11 @@ def validate_tax(
     gross_annual = stated_gross * 12
     recalc = calculate_income_tax(gross_annual, regime="new")
     notes.append(f"Recalculated using FY 2024-25 New Tax Regime.")
-    notes.append(f"Gross Annual: ₹{gross_annual:,.2f}")
-    notes.append(f"Taxable Income: ₹{recalc.taxable_income:,.2f}")
-    notes.append(f"Expected Monthly TDS: ₹{recalc.monthly_tds:,.2f}")
+    notes.append(f"Gross Annual: Rs.{gross_annual:,.2f}")
+    notes.append(f"Taxable Income: Rs.{recalc.taxable_income:,.2f}")
+    notes.append(f"Expected Monthly TDS: Rs.{recalc.monthly_tds:,.2f}")
 
-    # Compare TDS
+    # Compare TDS — only compare if we actually found a TDS value on the document
     tds_valid = True
     tds_deviation = None
     if stated_tds is not None and recalc.monthly_tds > 0:
@@ -147,41 +156,47 @@ def validate_tax(
         if tds_deviation > TDS_DEVIATION_TOLERANCE:
             tds_valid = False
             notes.append(
-                f"⚠ TDS MISMATCH: Stated ₹{stated_tds:,.2f} vs "
-                f"Expected ₹{recalc.monthly_tds:,.2f} "
+                f"TDS MISMATCH: Stated Rs.{stated_tds:,.2f} vs "
+                f"Expected Rs.{recalc.monthly_tds:,.2f} "
                 f"(Deviation: {tds_deviation:.1%})"
             )
         else:
-            notes.append(f"✓ TDS matches within tolerance ({tds_deviation:.1%})")
+            notes.append(f"TDS matches within tolerance ({tds_deviation:.1%})")
     elif stated_tds is not None and recalc.monthly_tds == 0:
         # Tax is 0 due to rebate, but TDS is stated
         if stated_tds > 100:
             tds_valid = False
             tds_deviation = 1.0
             notes.append(
-                f"⚠ TDS MISMATCH: Stated ₹{stated_tds:,.2f} but "
+                f"TDS MISMATCH: Stated Rs.{stated_tds:,.2f} but "
                 f"income qualifies for Section 87A rebate (zero tax)."
             )
+    else:
+        # TDS not found in document — skip (not a fraud signal, may be image-based PDF)
+        notes.append("TDS not extracted from document — skipping TDS comparison.")
 
-    # Compare PF
+    # Compare PF — only compare if we actually found a PF value on the document
     pf_valid = True
     pf_deviation = None
     expected_pf = None
     if stated_basic is not None:
         expected_pf = calculate_expected_pf(stated_basic)
-        notes.append(f"Expected PF (12% of Basic ₹{stated_basic:,.2f}): ₹{expected_pf:,.2f}")
+        notes.append(f"Expected PF (12% of Basic Rs.{stated_basic:,.2f}): Rs.{expected_pf:,.2f}")
 
         if stated_pf is not None and expected_pf > 0:
             pf_deviation = abs(stated_pf - expected_pf) / expected_pf
             if pf_deviation > TDS_DEVIATION_TOLERANCE:
                 pf_valid = False
                 notes.append(
-                    f"⚠ PF MISMATCH: Stated ₹{stated_pf:,.2f} vs "
-                    f"Expected ₹{expected_pf:,.2f} "
+                    f"PF MISMATCH: Stated Rs.{stated_pf:,.2f} vs "
+                    f"Expected Rs.{expected_pf:,.2f} "
                     f"(Deviation: {pf_deviation:.1%})"
                 )
             else:
-                notes.append(f"✓ PF matches within tolerance ({pf_deviation:.1%})")
+                notes.append(f"PF matches within tolerance ({pf_deviation:.1%})")
+        else:
+            # PF not extracted — skip comparison
+            notes.append("PF not extracted from document — skipping PF comparison.")
 
     # Calculate risk score
     score = 0

@@ -123,10 +123,17 @@ def _detect_document_type(text: str, filename: str) -> DocumentType:
 
 def _parse_amount(text: str) -> Optional[float]:
     """
-    Parse Indian currency amount from text.
-    Handles: ₹1,23,456.78 / Rs. 1,23,456 / 77,400 / 99400
+    Parse Indian currency amount from text with OCR typo correction.
+    Handles: ₹1,23,456.78 / Rs. 1,23,456 / 77,400 / 99400 and OCR typos like 'S0,000'.
     """
-    clean = re.sub(r"[₹$€]|Rs\.?\s*|INR\s*|[ZTCR()]+", "", text.strip())
+    clean = text.strip()
+    # Fix common OCR typos in numbers
+    clean = clean.replace('S', '5').replace('s', '5')
+    clean = clean.replace('O', '0').replace('o', '0')
+    clean = clean.replace('B', '8')
+    clean = clean.replace('l', '1').replace('|', '1')
+    
+    clean = re.sub(r"[₹$€]|Rs\.?\s*|INR\s*|[ZTCR()]+", "", clean)
     clean = clean.replace(",", "").strip()
     match = re.search(r"([-+]?\d+\.?\d*)", clean)
     if match:
@@ -320,33 +327,103 @@ LOAN_APPLICATION_FIELDS = {
     ],
 }
 
+ITR_FIELDS = {
+    "pan": [
+        r"pan\s*(?:number|no\.?)?\s*(?::|\.)*\s*([A-Z]{5}\d{4}[A-Z])",
+    ],
+    "assessment_year": [
+        r"assessment\s*year\s*(?::|\.)*\s*(\d{4}-\d{2,4}|\d{4}-\d{2})",
+    ],
+    "gross_total_income": [
+        r"gross\s*total\s*income\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+        r"total\s*income\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+    ],
+    "tax_payable": [
+        r"tax\s*payable\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+        r"total\s*tax\s*payable\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+    ],
+    "tds_deducted": [
+        r"tds\s*(?:deducted|credit)\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+    ],
+    "net_tax_payable": [
+        r"net\s*tax\s*(?:payable|liability)\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+    ],
+    "salary_income": [
+        r"(?:income\s*from\s*salary|salary\s*income)\s*(?::|\.)*\s*[₹Rs\.]*\s*([\d,]+\.?\d*)",
+    ],
+}
+
 
 def _extract_fields_by_patterns(
     text: str,
     patterns: dict[str, list[str]],
     doc_name: str,
 ) -> list[ExtractedField]:
-    """Apply regex patterns to extract structured fields from OCR text."""
+    """Apply regex patterns and proximity search to extract structured fields from OCR text."""
     fields = []
     lower_text = text.lower()
+    
+    numeric_field_names = {
+        "gross_salary", "basic_pay", "net_pay", "salary_credit", 
+        "total_deductions", "monthly_salary", "annual_ctc", 
+        "loan_amount", "income_tax", "provident_fund"
+    }
 
     for field_name, field_patterns in patterns.items():
+        found = False
         for pattern in field_patterns:
+            # 1. Try exact regex match
             match = re.search(pattern, lower_text)
-            if match:
+            if match and len(match.groups()) > 0:
                 raw_value = match.group(1).strip()
-                # Clean up extracted value
                 raw_value = re.sub(r'\s+', ' ', raw_value).strip()
                 if raw_value:
                     numeric = _parse_amount(raw_value)
-                    fields.append(ExtractedField(
-                        field_name=field_name,
-                        value=raw_value,
-                        numeric_value=numeric,
-                        confidence=0.85,
-                        source_document=doc_name,
-                    ))
-                    break
+                    if field_name in numeric_field_names and numeric is None:
+                        pass # Regex matched words but we needed a number, fallback to proximity
+                    else:
+                        fields.append(ExtractedField(
+                            field_name=field_name,
+                            value=raw_value,
+                            numeric_value=numeric,
+                            confidence=0.85,
+                            source_document=doc_name,
+                        ))
+                        found = True
+                        break
+
+        # 2. Proximity-based fallback for numeric fields
+        if not found and field_name in numeric_field_names:
+            for pattern in field_patterns:
+                # Strip out regex formatting to get the core keyword
+                clean_pattern = re.sub(r'[\(\)\?\:\.\*\|\+\[\]\^\\$]', ' ', pattern)
+                keywords = [k for k in clean_pattern.split() if len(k) > 3 and k not in ['the', 'and', 'with']]
+                if keywords:
+                    kw = keywords[0]
+                    idx = lower_text.find(kw)
+                    if idx != -1:
+                        # Extract a window of text immediately following the keyword
+                        window = text[idx:idx+120]
+                        # Find all number-like strings in the window
+                        # Included S, B, O, l, | to catch OCR typos before they are cleaned
+                        numbers = re.findall(r"[\d,SBoOIl]+\.?\d*", window)
+                        if numbers:
+                            parsed_nums = [_parse_amount(n) for n in numbers]
+                            valid_nums = [n for n in parsed_nums if n is not None and n > 100]
+                            if valid_nums:
+                                # Typically the closest valid number after the label is the right one
+                                best_num = valid_nums[0]
+                                fields.append(ExtractedField(
+                                    field_name=field_name,
+                                    value=str(best_num),
+                                    numeric_value=best_num,
+                                    confidence=0.75, # slightly lower confidence for proximity
+                                    source_document=doc_name,
+                                ))
+                                found = True
+                                break
+        if found:
+            continue
 
     return fields
 
@@ -445,7 +522,7 @@ def extract_fields(
     elif doc_type == DocumentType.LOAN_APPLICATION:
         fields = _extract_fields_by_patterns(text, LOAN_APPLICATION_FIELDS, document_name)
     elif doc_type == DocumentType.ITR_FORM:
-        fields = _extract_fields_by_patterns(text, ITR_FIELDS if 'ITR_FIELDS' in dir() else {}, document_name)
+        fields = _extract_fields_by_patterns(text, ITR_FIELDS, document_name)
     else:
         fields = []
 

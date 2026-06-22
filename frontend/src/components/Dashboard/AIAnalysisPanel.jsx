@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { getAIStatus } from '../../api/veriflow.js';
 
-export default function AIAnalysisPanel({ aiAnalysis, packetId }) {
+const SEV_ICONS = {
+  critical: '🔴',
+  high: '🟠',
+  medium: '🟡',
+  low: '🔵',
+};
+
+export default function ForensicEnginePanel({ aiAnalysis, packetId }) {
   const [status, setStatus] = useState(aiAnalysis ? 'complete' : 'processing');
   const [result, setResult] = useState(aiAnalysis);
   const [error, setError] = useState(null);
@@ -23,79 +30,127 @@ export default function AIAnalysisPanel({ aiAnalysis, packetId }) {
           clearInterval(pollInterval);
         }
       } catch (err) {
-        console.error("AI polling failed", err);
+        console.error('Forensic engine polling failed', err);
       }
     };
 
+    // Poll immediately then every 2s
+    poll();
     pollInterval = setInterval(poll, 2000);
     return () => clearInterval(pollInterval);
   }, [packetId, status]);
 
   return (
     <div className="panel" style={{ height: '100%' }}>
-      <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <span>Local Offline AI Analysis</span>
+      <div className="engine-header">
+        <div className="engine-icon">🧠</div>
+        <div>
+          <div className="engine-title">Forensic Intelligence Engine</div>
+          <div className="engine-subtitle">12-rule deterministic fraud analysis · Offline</div>
+        </div>
         {status === 'processing' && (
-          <span className="badge badge-warn">Analyzing...</span>
+          <span className="badge badge-warn" style={{ marginLeft: 'auto' }}>Running...</span>
+        )}
+        {status === 'complete' && result && (
+          <span className={`badge ${result.is_suspicious ? 'badge-danger' : 'badge-clean'}`} style={{ marginLeft: 'auto' }}>
+            {result.is_suspicious ? 'SUSPICIOUS' : 'PASSED'}
+          </span>
         )}
       </div>
 
       {status === 'processing' && (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: '#6b7280' }}>
-          <div className="spinner" style={{ marginBottom: 16 }}></div>
-          <p style={{ fontSize: 13 }}>The offline LLM is reviewing extracted data...</p>
-          <p style={{ fontSize: 11, marginTop: 4 }}>This may take 15-30s on CPU.</p>
+        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-secondary)' }}>
+          <div className="spinner" style={{ marginBottom: 16 }} />
+          <p style={{ fontSize: 13 }}>Running forensic rule checks...</p>
+          <p style={{ fontSize: 11, marginTop: 4, color: 'var(--text-muted)' }}>
+            Checking 12 fraud indicators across all documents
+          </p>
         </div>
       )}
 
       {status === 'error' && (
         <div className="alert alert-danger">
-          <strong>AI Analysis Failed:</strong> {error || 'Could not reach local AI.'}
+          <strong>Engine Error:</strong> {error || 'Could not complete analysis.'}
         </div>
       )}
 
       {status === 'complete' && result && (
         <div>
-          <div style={{
-            padding: 12,
-            background: result.is_suspicious ? '#fef2f2' : '#f0fdf4',
-            borderLeft: `4px solid ${result.is_suspicious ? '#ef4444' : '#22c55e'}`,
-            marginBottom: 16,
-            fontSize: 13,
-            lineHeight: 1.5
-          }}>
-            <p><strong>Offline LLM Summary:</strong></p>
-            <p>{result.summary}</p>
-          </div>
-
+          {/* Suspicion Score */}
           <div style={{ marginBottom: 16 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, color: '#4b5563' }}>AI SUSPICION SCORE</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4 }}>
-              <div style={{ flex: 1, height: 8, background: '#e5e7eb', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  width: `${result.suspicion_score}%`,
-                  background: result.suspicion_score > 50 ? '#ef4444' : result.suspicion_score > 20 ? '#f59e0b' : '#22c55e'
-                }} />
-              </div>
-              <span style={{ fontWeight: 600, fontSize: 14 }}>{result.suspicion_score}/100</span>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 8,
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-secondary)' }}>
+                Engine Score
+              </span>
+              <span style={{
+                fontFamily: 'var(--font-mono)',
+                fontSize: 20,
+                fontWeight: 700,
+                color: result.suspicion_score >= 60 ? 'var(--risk-danger)' :
+                       result.suspicion_score >= 30 ? 'var(--risk-warn)' : 'var(--risk-clean)',
+              }}>
+                {result.suspicion_score}/100
+              </span>
+            </div>
+            <div className="risk-bar-track">
+              <div
+                className={`risk-bar-fill ${result.suspicion_score >= 60 ? 'tampered' : result.suspicion_score >= 30 ? 'suspicious' : 'clean'}`}
+                style={{ width: `${result.suspicion_score}%` }}
+              />
             </div>
           </div>
 
-          {result.flags?.length > 0 && (
+          {/* Summary */}
+          <div style={{
+            padding: '12px 14px',
+            background: result.is_suspicious ? 'var(--risk-danger-bg)' : 'var(--risk-clean-bg)',
+            border: `1px solid ${result.is_suspicious ? 'var(--risk-danger-border)' : 'var(--risk-clean-border)'}`,
+            borderRadius: 'var(--radius)',
+            marginBottom: 16,
+            fontSize: 12,
+            lineHeight: 1.6,
+            color: 'var(--text-primary)',
+          }}>
+            {result.summary}
+          </div>
+
+          {/* Flags */}
+          {result.flags?.length > 0 ? (
             <div>
-              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#374151' }}>AI DETECTED FLAGS</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div className="panel-title" style={{ marginBottom: 10 }}>
+                Violations Detected ({result.flags.length})
+              </div>
+              <div className="flag-list">
                 {result.flags.map((flag, i) => (
-                  <div key={i} style={{ padding: 10, border: '1px solid #e5e7eb', borderRadius: 4, background: '#f9fafb' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span className={`sev-${flag.severity || 'low'}`} style={{ fontSize: 10 }}>{flag.severity?.toUpperCase()}</span>
-                      <span style={{ fontSize: 11, color: '#6b7280' }}>{flag.affected_document || 'General'}</span>
+                  <div key={i} className={`flag-item ${flag.severity || 'low'}`}>
+                    <div>
+                      <span style={{ fontSize: 14 }}>{SEV_ICONS[flag.severity] || '⚪'}</span>
                     </div>
-                    <p style={{ fontSize: 12, margin: 0, color: '#374151' }}>{flag.description}</p>
+                    <div className="flag-content">
+                      <div style={{ marginBottom: 4 }}>
+                        <span className={`flag-badge ${flag.severity || 'low'}`}>
+                          {(flag.severity || 'low').toUpperCase()}
+                        </span>
+                      </div>
+                      {flag.description}
+                      {flag.affected_document && (
+                        <div className="flag-meta">
+                          Source: {flag.affected_document}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
+            </div>
+          ) : (
+            <div className="alert alert-success">
+              ✓ All 12 forensic rules passed. No mathematical fraud, income inflation, or arithmetic inconsistencies detected.
             </div>
           )}
         </div>

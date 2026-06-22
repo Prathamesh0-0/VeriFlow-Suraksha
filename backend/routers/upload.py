@@ -132,7 +132,7 @@ async def get_ai_status(packet_id: str):
         return JSONResponse({"status": "processing"})
         
     if task["status"] == "complete":
-        return JSONResponse({"status": "complete", "result": task["result"].dict()})
+        return JSONResponse({"status": "complete", "result": task["result"].model_dump()})
     elif task["status"] == "error":
         return JSONResponse({"status": "error", "error": task["error"]})
         

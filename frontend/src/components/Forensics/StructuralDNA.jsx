@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
 
-function SeverityBadge({ severity }) {
-  const cls = `sev-${severity || 'low'}`;
-  return <span className={cls}>{(severity || 'low').toUpperCase()}</span>;
+const SEV_CLASS = {
+  critical: 'critical',
+  high: 'high',
+  medium: 'medium',
+  low: 'low',
+};
+
+function FlagBadge({ severity }) {
+  const cls = SEV_CLASS[severity] || 'low';
+  return <span className={`flag-badge ${cls}`}>{(severity || 'low').toUpperCase()}</span>;
 }
 
 function DocumentSection({ docReport, index }) {
@@ -10,102 +17,143 @@ function DocumentSection({ docReport, index }) {
   const sg = docReport.syntax_geometry;
   const chrono = docReport.chronological;
 
-  const anomalies = [
-    ...(sg?.font_anomalies || []).map(a => ({ ...a, type: 'Font' })),
-    ...(sg?.coordinate_anomalies || []).map(a => ({ ...a, type: 'Coordinate' })),
-    ...(sg?.spacing_anomalies || []).map(a => ({ ...a, type: 'Spacing' })),
-    ...(chrono?.metadata_flags?.filter(f => f.severity !== 'low') || []).map(f => ({
-      severity: f.severity, page: 1, description: f.description, type: 'Metadata',
-    })),
+  // Collect all anomalies from structural analysis
+  const structuralAnomalies = [
+    ...(sg?.font_anomalies || []).map(a => ({ ...a, type: 'Font Size Deviation' })),
+    ...(sg?.coordinate_anomalies || []).map(a => ({ ...a, type: 'Baseline Drift' })),
+    ...(sg?.spacing_anomalies || []).map(a => ({ ...a, type: 'Spacing Anomaly' })),
   ];
 
+  // Only show non-LOW metadata flags (LOW are trusted-source info, not real flags)
+  const metadataFlags = (chrono?.metadata_flags || [])
+    .filter(f => f.severity !== 'low');
+
+  const totalIssues = structuralAnomalies.length + metadataFlags.length;
   const verdict = sg?.verdict || chrono?.verdict || 'clean';
+  const verdictClass = verdict === 'clean' ? 'status-pass' : verdict === 'suspicious' ? 'status-warn' : 'status-fail';
+
+  // Doc type formatting
+  const docTypeLabel = docReport.document_type?.replace(/_/g, ' ').toUpperCase() || 'UNKNOWN';
 
   return (
-    <div style={{ marginBottom: 12, border: '1px solid #d1d5db', background: '#fff' }}>
-      <div
-        onClick={() => setOpen(!open)}
-        style={{
-          padding: '10px 14px',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          cursor: 'pointer', background: '#f9fafb', borderBottom: open ? '1px solid #d1d5db' : 'none',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    <div className="doc-accordion">
+      <div className="doc-accordion-header" onClick={() => setOpen(!open)}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontWeight: 600, fontSize: 13 }}>
             {index + 1}. {docReport.document_name}
           </span>
-          <span style={{ fontSize: 11, color: '#6b7280', textTransform: 'uppercase' }}>
-            {docReport.document_type?.replace('_', ' ')}
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            {docTypeLabel}
           </span>
-          <span className={verdict === 'clean' ? 'status-pass' : verdict === 'suspicious' ? 'status-warn' : 'status-fail'}
-                style={{ fontSize: 12 }}>
+          <span className={verdictClass} style={{ fontSize: 11 }}>
             {verdict.toUpperCase()}
           </span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {anomalies.length > 0 && (
-            <span style={{ fontSize: 12, color: '#b91c1c', fontWeight: 600 }}>
-              {anomalies.length} issue{anomalies.length !== 1 ? 's' : ''}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {totalIssues > 0 && (
+            <span style={{
+              fontSize: 12,
+              color: 'var(--risk-danger)',
+              fontWeight: 600,
+              fontFamily: 'var(--font-mono)',
+            }}>
+              {totalIssues} issue{totalIssues !== 1 ? 's' : ''}
             </span>
           )}
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>{open ? '▼' : '▶'}</span>
+          {sg?.risk_score > 0 && (
+            <span style={{
+              fontSize: 11,
+              color: sg.risk_score >= 60 ? 'var(--risk-danger)' : sg.risk_score >= 25 ? 'var(--risk-warn)' : 'var(--text-muted)',
+              fontFamily: 'var(--font-mono)',
+            }}>
+              risk: {sg.risk_score}
+            </span>
+          )}
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{open ? '▼' : '▶'}</span>
         </div>
       </div>
 
       {open && (
-        <div style={{ padding: 14 }}>
-          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-            {/* Left: Structure */}
-            <div style={{ flex: 1, minWidth: 300 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#374151' }}>
-                STRUCTURE ANALYSIS
+        <div className="doc-accordion-body">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+
+            {/* Left: Structural Anomalies */}
+            <div>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: 'var(--text-secondary)',
+                marginBottom: 10,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                Structural Analysis
                 {sg && (
-                  <span style={{ marginLeft: 12, fontWeight: 400, color: '#6b7280' }}>
-                    Risk: <span style={{ fontWeight: 600, color: (sg.risk_score || 0) > 25 ? '#b91c1c' : '#15803d' }}>
-                      {sg.risk_score || 0}/100
-                    </span>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 11,
+                    color: sg.risk_score >= 60 ? 'var(--risk-danger)' : sg.risk_score >= 25 ? 'var(--risk-warn)' : 'var(--risk-clean)',
+                    fontWeight: 700,
+                  }}>
+                    {sg.risk_score}/100
                   </span>
                 )}
               </div>
 
               {sg?.fonts_detected?.length > 0 && (
-                <div style={{ marginBottom: 10, fontSize: 12, color: '#6b7280' }}>
-                  Fonts: {sg.fonts_detected.slice(0, 5).map(f => f.name).join(', ')}
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 10, fontFamily: 'var(--font-mono)' }}>
+                  Fonts: {sg.fonts_detected.slice(0, 4).map(f => f.name).join(', ')}
+                  {sg.fonts_detected.length > 4 && ` +${sg.fonts_detected.length - 4} more`}
                 </div>
               )}
 
-              {anomalies.filter(a => a.type !== 'Metadata').length > 0 ? (
-                <div style={{ overflowY: 'auto', maxHeight: '300px', paddingRight: '4px' }}>
-                  <table style={{ fontSize: 12, margin: 0 }}>
-                    <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 1, boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
-                      <tr><th>Severity</th><th>Type</th><th>Page</th><th>Description</th></tr>
-                    </thead>
-                    <tbody>
-                      {anomalies.filter(a => a.type !== 'Metadata').map((a, i) => (
-                        <tr key={i}>
-                          <td><SeverityBadge severity={a.severity} /></td>
-                          <td>{a.type}</td>
-                          <td>{a.page}</td>
-                          <td>{a.description}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              {structuralAnomalies.length > 0 ? (
+                <div className="flag-list" style={{ maxHeight: 320, overflowY: 'auto' }}>
+                  {structuralAnomalies.map((a, i) => (
+                    <div key={i} className={`flag-item ${a.severity || 'low'}`}>
+                      <FlagBadge severity={a.severity} />
+                      <div className="flag-content">
+                        <div style={{ fontSize: 11, color: 'var(--text-accent)', marginBottom: 3, fontWeight: 600 }}>
+                          {a.type} · Page {a.page}
+                        </div>
+                        {a.description}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
-                <div style={{ padding: 10, background: '#f0fdf4', border: '1px solid #bbf7d0', fontSize: 12, color: '#15803d' }}>
-                  No structural anomalies detected.
+                <div style={{
+                  padding: '12px 14px',
+                  background: 'var(--risk-clean-bg)',
+                  border: '1px solid var(--risk-clean-border)',
+                  borderRadius: 'var(--radius)',
+                  fontSize: 12,
+                  color: 'var(--risk-clean)',
+                }}>
+                  ✓ No structural anomalies detected. Font sizes, baselines, and character spacing are consistent.
                 </div>
               )}
             </div>
 
-            {/* Right: Metadata */}
-            <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 8, color: '#374151' }}>
-                METADATA FORENSICS
+            {/* Right: Metadata Forensics */}
+            <div>
+              <div style={{
+                fontSize: 11,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.6px',
+                color: 'var(--text-secondary)',
+                marginBottom: 10,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+              }}>
+                Metadata Forensics
                 {chrono && (
-                  <span style={{ marginLeft: 12 }} className={chrono.verdict === 'clean' ? 'status-pass' : 'status-fail'}>
+                  <span className={chrono.verdict === 'clean' ? 'status-pass' : 'status-fail'} style={{ fontSize: 11 }}>
                     {chrono.verdict?.toUpperCase()}
                   </span>
                 )}
@@ -113,35 +161,68 @@ function DocumentSection({ docReport, index }) {
 
               {chrono ? (
                 <>
-                  <table style={{ fontSize: 12, marginBottom: 8 }}>
+                  <table className="data-table" style={{ marginBottom: 12 }}>
                     <tbody>
-                      <tr><th>Created</th><td>{chrono.creation_date || 'N/A'}</td></tr>
-                      <tr><th>Modified</th><td>{chrono.modification_date || 'N/A'}</td></tr>
-                      <tr><th>Producer</th><td>{chrono.producer || 'N/A'}</td></tr>
                       <tr>
-                        <th>Timezone</th>
-                        <td className={chrono.timezone_valid === false ? 'status-fail' : chrono.timezone_valid === true ? 'status-pass' : ''}>
-                          {chrono.timezone_found || 'N/A'}
+                        <td style={{ color: 'var(--text-secondary)', fontSize: 11, width: 90 }}>Created</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                          {chrono.creation_date || <span style={{ color: 'var(--text-muted)' }}>N/A</span>}
                         </td>
                       </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Modified</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                          {chrono.modification_date || <span style={{ color: 'var(--text-muted)' }}>N/A</span>}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Producer</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, wordBreak: 'break-all' }}>
+                          {chrono.producer || <span style={{ color: 'var(--text-muted)' }}>N/A</span>}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Timezone</td>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
+                          <span className={chrono.timezone_valid === false ? 'status-fail' : 'status-pass'}>
+                            {chrono.timezone_found || 'N/A'}
+                          </span>
+                          {chrono.timezone_valid && (
+                            <span style={{ fontSize: 10, color: 'var(--risk-clean)', marginLeft: 6 }}>✓ IST</span>
+                          )}
+                        </td>
+                      </tr>
+                      {chrono.tool_suspicious && (
+                        <tr>
+                          <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Tool</td>
+                          <td>
+                            <span className="status-fail" style={{ fontSize: 11 }}>⚠ Editing software detected</span>
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
-                  {anomalies.filter(a => a.type === 'Metadata').length > 0 && (
-                    <table style={{ fontSize: 12 }}>
-                      <thead><tr><th>Severity</th><th>Issue</th></tr></thead>
-                      <tbody>
-                        {anomalies.filter(a => a.type === 'Metadata').map((a, i) => (
-                          <tr key={i}>
-                            <td><SeverityBadge severity={a.severity} /></td>
-                            <td>{a.description}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+
+                  {metadataFlags.length > 0 && (
+                    <div className="flag-list">
+                      {metadataFlags.map((f, i) => (
+                        <div key={i} className={`flag-item ${f.severity || 'low'}`}>
+                          <FlagBadge severity={f.severity} />
+                          <div className="flag-content">
+                            <div style={{ fontSize: 11, color: 'var(--text-accent)', marginBottom: 3, fontWeight: 600 }}>
+                              {f.field}
+                            </div>
+                            {f.description}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </>
               ) : (
-                <div style={{ color: '#9ca3af', fontSize: 12 }}>No metadata extracted.</div>
+                <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>
+                  No metadata available for this document.
+                </div>
               )}
             </div>
           </div>
@@ -155,7 +236,12 @@ export default function StructuralDNA({ report }) {
   if (!report.document_reports?.length) return null;
   return (
     <div style={{ marginBottom: 20 }}>
-      <div className="section-title">Document Structure Analysis</div>
+      <div className="panel-title" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal', marginBottom: 12 }}>
+        🔬 Layer 1 — Structural DNA Analysis
+      </div>
+      <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
+        Analyzes raw PDF content streams for subtle font deviations (0.1–0.8pt), baseline drift, abnormal character spacing, and metadata tampering indicators.
+      </p>
       {report.document_reports.map((dr, i) => (
         <DocumentSection key={i} docReport={dr} index={i} />
       ))}
