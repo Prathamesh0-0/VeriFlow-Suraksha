@@ -42,7 +42,6 @@ export default function OverviewPanel({ report }) {
   const cls = getRiskClass(score);
   const flags = report.flags_count || {};
 
-  const verdictEmoji = { clean: '✅', suspicious: '⚠️', tampered: '🚨' }[verdict] || '❓';
   const verdictLabel = { clean: 'VERIFIED CLEAN', suspicious: 'SUSPICIOUS — REVIEW REQUIRED', tampered: 'TAMPERED — REJECT' }[verdict] || verdict.toUpperCase();
 
   // Gather component scores from the report
@@ -103,11 +102,10 @@ export default function OverviewPanel({ report }) {
 
   return (
     <div className="panel">
-      <div className="panel-title">⚡ Forensic Overview</div>
+      <div className="panel-title">Forensic Overview</div>
 
       {/* Verdict Banner */}
       <div className={`verdict-banner ${cls}`} style={{ marginBottom: 20 }}>
-        <div className="verdict-icon">{verdictEmoji}</div>
         <div className="verdict-content">
           <div className="verdict-label">{verdictLabel}</div>
           <div className="verdict-summary">{report.summary}</div>

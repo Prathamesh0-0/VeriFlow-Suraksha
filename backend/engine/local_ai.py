@@ -157,8 +157,8 @@ def _check_pf_percentage(extracted_data: Dict) -> Optional[AIFlag]:
             dev_capped = abs(p_val - expected_pf_capped) / expected_pf_capped if expected_pf_capped > 0 else 0
             dev_full = abs(p_val - expected_pf_full) / expected_pf_full if expected_pf_full > 0 else 0
 
-            # Only flag if PF doesn't match EITHER method
-            if dev_capped > 0.40 and dev_full > 0.40:  # 40% tolerance for both methods
+            # Only flag if PF doesn't match EITHER method (70% tolerance — broad range for different schemes)
+            if dev_capped > 0.70 and dev_full > 0.70:  # Must deviate from BOTH by >70%
                 return AIFlag(
                     severity=Severity.HIGH,
                     description=(

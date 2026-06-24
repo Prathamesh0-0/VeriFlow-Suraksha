@@ -20,7 +20,7 @@ export default function TaxRecalculation({ taxResult }) {
   return (
     <div className="panel" style={{ marginBottom: 20 }}>
       <div className="panel-title">
-        🧮 Layer 2 — Indian Tax Logic Engine
+        Layer 2 — Indian Tax Logic Engine
         <span style={{
           marginLeft: 'auto',
           fontFamily: 'var(--font-mono)',
@@ -49,14 +49,12 @@ export default function TaxRecalculation({ taxResult }) {
             <span className="key">TDS Deducted</span>
             <span className={`val ${taxResult.tds_valid === false ? 'mismatch' : 'match'}`}>
               {fmt(taxResult.stated_tds)}
-              {taxResult.stated_tds != null && (taxResult.tds_valid ? ' ✓' : ' ✗')}
             </span>
           </div>
           <div className="tax-row">
             <span className="key">PF Deducted</span>
             <span className={`val ${taxResult.pf_valid === false ? 'mismatch' : 'match'}`}>
               {fmt(taxResult.stated_pf)}
-              {taxResult.stated_pf != null && (taxResult.pf_valid ? ' ✓' : ' ✗')}
             </span>
           </div>
           <div className="tax-row">
@@ -86,7 +84,7 @@ export default function TaxRecalculation({ taxResult }) {
                 <span className="key">Tax + 4% Cess</span>
                 <span className="val">{fmt(recalc.total_tax)}</span>
               </div>
-              <div className="tax-row" style={{ borderTop: '1px solid var(--border-hover)', paddingTop: 6, marginTop: 4 }}>
+              <div className="tax-row" style={{ borderTop: '1px solid var(--border-color)', paddingTop: 6, marginTop: 4 }}>
                 <span className="key" style={{ fontWeight: 600, color: 'var(--text-primary)' }}>Expected Monthly TDS</span>
                 <span className={`val ${taxResult.tds_valid === false ? 'mismatch' : 'match'}`} style={{ fontSize: 14 }}>
                   {fmt(recalc.monthly_tds)}
@@ -122,7 +120,7 @@ export default function TaxRecalculation({ taxResult }) {
             </td>
             <td>
               <span className={taxResult.tds_valid ? 'status-pass' : 'status-fail'}>
-                {taxResult.tds_valid ? '✓ PASS' : '✗ FAIL'}
+                {taxResult.tds_valid ? 'PASS' : 'FAIL'}
               </span>
             </td>
           </tr>
@@ -135,7 +133,7 @@ export default function TaxRecalculation({ taxResult }) {
             </td>
             <td>
               <span className={taxResult.pf_valid ? 'status-pass' : 'status-fail'}>
-                {taxResult.pf_valid ? '✓ PASS' : '✗ FAIL'}
+                {taxResult.pf_valid ? 'PASS' : 'FAIL'}
               </span>
             </td>
           </tr>
@@ -145,11 +143,11 @@ export default function TaxRecalculation({ taxResult }) {
       {/* Verdict */}
       {isClean ? (
         <div className="alert alert-success">
-          ✓ TDS and PF deductions are within the expected range based on FY 2024-25 New Tax Regime calculations. No mathematical anomalies detected.
+          TDS and PF deductions are within the expected range based on FY 2024-25 New Tax Regime calculations. No mathematical anomalies detected.
         </div>
       ) : (
         <div className="alert alert-danger">
-          ✗ Tax deduction mismatches detected. The salary figures on this document produce different tax obligations than what is stated. This is a strong indicator of income fabrication.
+          Tax deduction mismatches detected. The salary figures on this document produce different tax obligations than what is stated. This is a strong indicator of income fabrication.
         </div>
       )}
 
@@ -162,8 +160,8 @@ export default function TaxRecalculation({ taxResult }) {
           <pre style={{
             marginTop: 8,
             padding: '12px 14px',
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
+            background: 'var(--bg-section)',
+            border: '1px solid var(--border-light)',
             borderRadius: 'var(--radius)',
             fontSize: 11,
             fontFamily: 'var(--font-mono)',

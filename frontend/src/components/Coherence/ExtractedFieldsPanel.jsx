@@ -32,7 +32,7 @@ export default function ExtractedFieldsPanel({ documentReports }) {
 
   return (
     <div className="panel" style={{ marginBottom: 16 }}>
-      <div className="panel-title">🔍 OCR-Extracted Financial Fields</div>
+      <div className="panel-title">OCR-Extracted Financial Fields</div>
       <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
         These are the actual values the system read from the documents using PyMuPDF text extraction.
         The coherence engine cross-validates these fields across all documents.

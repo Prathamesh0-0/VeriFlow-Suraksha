@@ -10,13 +10,6 @@ const DOC_LABELS = {
   unknown: 'Unknown',
 };
 
-const SEV_ICONS = {
-  critical: '🔴',
-  high: '🟠',
-  medium: '🟡',
-  low: '🔵',
-};
-
 export default function CoherenceMatrix({ coherence, documentReports }) {
   if (!coherence) return null;
 
@@ -45,7 +38,7 @@ export default function CoherenceMatrix({ coherence, documentReports }) {
   return (
     <div className="panel" style={{ marginBottom: 20 }}>
       <div className="panel-title">
-        🔗 Layer 2 — Cross-Document Coherence Engine
+        Layer 2 — Cross-Document Coherence Engine
         <span style={{
           marginLeft: 'auto',
           fontFamily: 'var(--font-mono)',
@@ -74,7 +67,7 @@ export default function CoherenceMatrix({ coherence, documentReports }) {
                 <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{c.desc}</td>
                 <td>
                   <span className={c.pass ? 'status-pass' : 'status-fail'}>
-                    {c.pass ? '✓ PASS' : '✗ FAIL'}
+                    {c.pass ? 'PASS' : 'FAIL'}
                   </span>
                 </td>
               </tr>
@@ -90,17 +83,16 @@ export default function CoherenceMatrix({ coherence, documentReports }) {
             fontSize: 12,
             fontWeight: 600,
             textTransform: 'uppercase',
-            letterSpacing: '0.6px',
+            letterSpacing: '0.5px',
             color: 'var(--risk-danger)',
             marginBottom: 12,
           }}>
-            ⚠ {contradictions.length} Contradiction{contradictions.length > 1 ? 's' : ''} Detected
+            {contradictions.length} Contradiction{contradictions.length > 1 ? 's' : ''} Detected
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {contradictions.map((c, i) => (
               <div key={i} className={`contradiction-card ${c.severity || 'low'}`}>
                 <div className="contradiction-header">
-                  <span style={{ fontSize: 14 }}>{SEV_ICONS[c.severity] || '⚪'}</span>
                   <span className={`flag-badge ${c.severity || 'low'}`}>
                     {(c.severity || 'low').toUpperCase()}
                   </span>
@@ -144,7 +136,7 @@ export default function CoherenceMatrix({ coherence, documentReports }) {
         </div>
       ) : (
         <div className="alert alert-success">
-          ✓ All cross-document coherence checks passed. Names, salaries, and financial figures are consistent across submitted documents.
+          All cross-document coherence checks passed. Names, salaries, and financial figures are consistent across submitted documents.
         </div>
       )}
 

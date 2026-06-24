@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAIStatus } from '../../api/veriflow.js';
 
-const SEV_ICONS = {
-  critical: '🔴',
-  high: '🟠',
-  medium: '🟡',
-  low: '🔵',
-};
-
 export default function ForensicEnginePanel({ aiAnalysis, packetId }) {
   const [status, setStatus] = useState(aiAnalysis ? 'complete' : 'processing');
   const [result, setResult] = useState(aiAnalysis);
@@ -43,7 +36,7 @@ export default function ForensicEnginePanel({ aiAnalysis, packetId }) {
   return (
     <div className="panel" style={{ height: '100%' }}>
       <div className="engine-header">
-        <div className="engine-icon">🧠</div>
+        <div className="engine-icon">FE</div>
         <div>
           <div className="engine-title">Forensic Intelligence Engine</div>
           <div className="engine-subtitle">12-rule deterministic fraud analysis · Offline</div>
@@ -84,7 +77,7 @@ export default function ForensicEnginePanel({ aiAnalysis, packetId }) {
               alignItems: 'center',
               marginBottom: 8,
             }}>
-              <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)' }}>
                 Engine Score
               </span>
               <span style={{
@@ -128,9 +121,6 @@ export default function ForensicEnginePanel({ aiAnalysis, packetId }) {
               <div className="flag-list">
                 {result.flags.map((flag, i) => (
                   <div key={i} className={`flag-item ${flag.severity || 'low'}`}>
-                    <div>
-                      <span style={{ fontSize: 14 }}>{SEV_ICONS[flag.severity] || '⚪'}</span>
-                    </div>
                     <div className="flag-content">
                       <div style={{ marginBottom: 4 }}>
                         <span className={`flag-badge ${flag.severity || 'low'}`}>
@@ -150,7 +140,7 @@ export default function ForensicEnginePanel({ aiAnalysis, packetId }) {
             </div>
           ) : (
             <div className="alert alert-success">
-              ✓ All 12 forensic rules passed. No mathematical fraud, income inflation, or arithmetic inconsistencies detected.
+              All 12 forensic rules passed. No mathematical fraud, income inflation, or arithmetic inconsistencies detected.
             </div>
           )}
         </div>

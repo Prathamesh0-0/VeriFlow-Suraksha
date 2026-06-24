@@ -42,7 +42,7 @@ function DocumentSection({ docReport, index }) {
           <span style={{ fontWeight: 600, fontSize: 13 }}>
             {index + 1}. {docReport.document_name}
           </span>
-          <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
             {docTypeLabel}
           </span>
           <span className={verdictClass} style={{ fontSize: 11 }}>
@@ -83,8 +83,8 @@ function DocumentSection({ docReport, index }) {
                 fontSize: 11,
                 fontWeight: 600,
                 textTransform: 'uppercase',
-                letterSpacing: '0.6px',
-                color: 'var(--text-secondary)',
+                letterSpacing: '0.5px',
+                color: 'var(--text-muted)',
                 marginBottom: 10,
                 display: 'flex',
                 alignItems: 'center',
@@ -125,15 +125,8 @@ function DocumentSection({ docReport, index }) {
                   ))}
                 </div>
               ) : (
-                <div style={{
-                  padding: '12px 14px',
-                  background: 'var(--risk-clean-bg)',
-                  border: '1px solid var(--risk-clean-border)',
-                  borderRadius: 'var(--radius)',
-                  fontSize: 12,
-                  color: 'var(--risk-clean)',
-                }}>
-                  ✓ No structural anomalies detected. Font sizes, baselines, and character spacing are consistent.
+                <div className="alert alert-success" style={{ marginBottom: 0 }}>
+                  No structural anomalies detected. Font sizes, baselines, and character spacing are consistent.
                 </div>
               )}
             </div>
@@ -144,8 +137,8 @@ function DocumentSection({ docReport, index }) {
                 fontSize: 11,
                 fontWeight: 600,
                 textTransform: 'uppercase',
-                letterSpacing: '0.6px',
-                color: 'var(--text-secondary)',
+                letterSpacing: '0.5px',
+                color: 'var(--text-muted)',
                 marginBottom: 10,
                 display: 'flex',
                 alignItems: 'center',
@@ -164,39 +157,39 @@ function DocumentSection({ docReport, index }) {
                   <table className="data-table" style={{ marginBottom: 12 }}>
                     <tbody>
                       <tr>
-                        <td style={{ color: 'var(--text-secondary)', fontSize: 11, width: 90 }}>Created</td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: 11, width: 90 }}>Created</td>
                         <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
                           {chrono.creation_date || <span style={{ color: 'var(--text-muted)' }}>N/A</span>}
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Modified</td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>Modified</td>
                         <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
                           {chrono.modification_date || <span style={{ color: 'var(--text-muted)' }}>N/A</span>}
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Producer</td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>Producer</td>
                         <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11, wordBreak: 'break-all' }}>
                           {chrono.producer || <span style={{ color: 'var(--text-muted)' }}>N/A</span>}
                         </td>
                       </tr>
                       <tr>
-                        <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Timezone</td>
+                        <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>Timezone</td>
                         <td style={{ fontFamily: 'var(--font-mono)', fontSize: 11 }}>
                           <span className={chrono.timezone_valid === false ? 'status-fail' : 'status-pass'}>
                             {chrono.timezone_found || 'N/A'}
                           </span>
                           {chrono.timezone_valid && (
-                            <span style={{ fontSize: 10, color: 'var(--risk-clean)', marginLeft: 6 }}>✓ IST</span>
+                            <span style={{ fontSize: 10, color: 'var(--risk-clean)', marginLeft: 6 }}>IST</span>
                           )}
                         </td>
                       </tr>
                       {chrono.tool_suspicious && (
                         <tr>
-                          <td style={{ color: 'var(--text-secondary)', fontSize: 11 }}>Tool</td>
+                          <td style={{ color: 'var(--text-muted)', fontSize: 11 }}>Tool</td>
                           <td>
-                            <span className="status-fail" style={{ fontSize: 11 }}>⚠ Editing software detected</span>
+                            <span className="status-fail" style={{ fontSize: 11 }}>Editing software detected</span>
                           </td>
                         </tr>
                       )}
@@ -236,8 +229,8 @@ export default function StructuralDNA({ report }) {
   if (!report.document_reports?.length) return null;
   return (
     <div style={{ marginBottom: 20 }}>
-      <div className="panel-title" style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal', marginBottom: 12 }}>
-        🔬 Layer 1 — Structural DNA Analysis
+      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 6 }}>
+        Layer 1 — Structural DNA Analysis
       </div>
       <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 14, lineHeight: 1.5 }}>
         Analyzes raw PDF content streams for subtle font deviations (0.1–0.8pt), baseline drift, abnormal character spacing, and metadata tampering indicators.

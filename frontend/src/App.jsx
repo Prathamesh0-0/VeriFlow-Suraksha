@@ -13,7 +13,7 @@ function AppShell() {
     <div className="app-shell">
       <header className="app-header no-print">
         <div className="app-logo">
-          <div className="logo-icon">⚡</div>
+          <div className="logo-icon">V</div>
           <div>
             <div>VeriFlow</div>
             <div className="logo-sub">Document Forensics Engine</div>
@@ -24,7 +24,7 @@ function AppShell() {
             <span style={{
               fontFamily: 'var(--font-mono)',
               fontSize: 11,
-              color: 'var(--text-secondary)',
+              color: 'var(--text-muted)',
               marginRight: 8,
             }}>
               REF: {state.report.packet_id}
@@ -38,10 +38,10 @@ function AppShell() {
               fontSize: 12,
               fontWeight: 500,
               textDecoration: 'none',
-              color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-              background: isActive ? 'var(--bg-elevated)' : 'transparent',
+              color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
+              background: isActive ? 'var(--accent-blue-light)' : 'transparent',
               border: '1px solid',
-              borderColor: isActive ? 'var(--border-hover)' : 'transparent',
+              borderColor: isActive ? '#bfdbfe' : 'transparent',
               transition: 'all 0.15s',
             })}
           >
@@ -56,10 +56,10 @@ function AppShell() {
                 fontSize: 12,
                 fontWeight: 500,
                 textDecoration: 'none',
-                color: isActive ? 'var(--text-primary)' : 'var(--text-secondary)',
-                background: isActive ? 'var(--bg-elevated)' : 'transparent',
+                color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                background: isActive ? 'var(--accent-blue-light)' : 'transparent',
                 border: '1px solid',
-                borderColor: isActive ? 'var(--border-hover)' : 'transparent',
+                borderColor: isActive ? '#bfdbfe' : 'transparent',
                 transition: 'all 0.15s',
               })}
             >
@@ -68,7 +68,7 @@ function AppShell() {
           )}
           <div className="header-status">
             <div className="status-dot" />
-            Engine Online
+            Online
           </div>
         </nav>
       </header>

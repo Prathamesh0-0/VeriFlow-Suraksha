@@ -99,7 +99,7 @@ export default function UploadPage() {
     <div style={{ maxWidth: 880, margin: '0 auto' }}>
       {/* Page Title */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, color: 'var(--text-primary)' }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4, color: 'var(--text-primary)' }}>
           Document Forensics
         </h1>
         <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
@@ -111,7 +111,7 @@ export default function UploadPage() {
       {/* Upload Panel */}
       <div className="panel">
         <div className="panel-title">
-          📂 Upload Documents
+          Upload Documents
         </div>
 
         <div
@@ -173,7 +173,7 @@ export default function UploadPage() {
                 Clear All
               </button>
               <button className="btn btn-primary" onClick={handleAnalyze} disabled={busy}>
-                {busy ? '⏳ Analyzing...' : '⚡ Run Forensic Analysis'}
+                {busy ? 'Analyzing...' : 'Run Forensic Analysis'}
               </button>
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function UploadPage() {
             <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>
               {analyzeStage || state.progressMessage}
             </span>
-            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-accent)', fontWeight: 600 }}>
+            <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--accent-blue)', fontWeight: 600 }}>
               {state.progress}%
             </span>
           </div>
@@ -213,7 +213,7 @@ export default function UploadPage() {
           <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>
             Pre-loaded Test Packets
           </h2>
-          <span className="badge badge-info">5 Scenarios</span>
+          <span className="badge badge-info">{datasets.length} Scenarios</span>
         </div>
         <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>
           Real documents crafted to test each fraud type. Run any packet to see the engine in action.
@@ -239,7 +239,7 @@ export default function UploadPage() {
                     disabled={busy || !p.available}
                     id={`run-packet-${p.id}`}
                   >
-                    {p.available ? '⚡ Run' : 'N/A'}
+                    {p.available ? 'Run' : 'N/A'}
                   </button>
                 </div>
               </div>

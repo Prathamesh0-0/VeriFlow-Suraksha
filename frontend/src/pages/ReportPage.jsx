@@ -17,12 +17,11 @@ export default function ReportPage() {
   if (!report) {
     return (
       <div style={{ textAlign: 'center', padding: 60 }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>📊</div>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: 14 }}>
           No forensic report available.
         </p>
         <button className="btn btn-primary" onClick={() => navigate('/')}>
-          ⚡ Start New Analysis
+          Start New Analysis
         </button>
       </div>
     );
@@ -43,19 +42,19 @@ export default function ReportPage() {
           </h1>
           <span style={{
             fontSize: 11,
-            color: 'var(--text-secondary)',
+            color: 'var(--text-muted)',
             fontFamily: 'var(--font-mono)',
           }}>
             Packet: {report.packet_id} · {report.total_documents} document(s) · {report.processing_time_seconds}s
           </span>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => window.print()}>🖨 Print</button>
+          <button className="btn" onClick={() => window.print()}>Print</button>
           <button
             className="btn btn-primary"
             onClick={() => { dispatch({ type: 'RESET' }); navigate('/'); }}
           >
-            ⚡ New Analysis
+            New Analysis
           </button>
         </div>
       </div>

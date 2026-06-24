@@ -32,40 +32,40 @@ export default function ELAViewer({ report }) {
 
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>ORIGINAL</div>
-            <div style={{ border: '1px solid #d1d5db', background: '#f9fafb', minHeight: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>ORIGINAL</div>
+            <div style={{ border: '1px solid var(--border-color)', background: 'var(--bg-section)', minHeight: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius)' }}>
               {cur?.original_image_path
                 ? <img src={getHeatmapUrl(cur.original_image_path)} alt="Original" style={{ maxWidth: '100%', maxHeight: 500 }} />
-                : <span style={{ color: '#9ca3af', fontSize: 12 }}>Preview not available</span>
+                : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>Preview not available</span>
               }
             </div>
           </div>
           <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>ELA HEATMAP</div>
-            <div style={{ border: '1px solid #d1d5db', background: '#f9fafb', minHeight: 250, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6, color: 'var(--text-secondary)' }}>ELA HEATMAP</div>
+            <div style={{ border: '1px solid var(--border-color)', background: 'var(--bg-section)', minHeight: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 'var(--radius)' }}>
               {cur?.heatmap_path
                 ? <img src={getHeatmapUrl(cur.heatmap_path)} alt="Heatmap" style={{ maxWidth: '100%', maxHeight: 500 }} />
-                : <span style={{ color: '#9ca3af', fontSize: 12 }}>Heatmap not available</span>
+                : <span style={{ color: 'var(--text-muted)', fontSize: 12 }}>Heatmap not available</span>
               }
             </div>
           </div>
         </div>
 
-        <table style={{ marginTop: 12, fontSize: 12 }}>
+        <table className="data-table" style={{ marginTop: 12 }}>
           <tbody>
             <tr>
-              <th style={{ width: 160 }}>ELA Score</th>
+              <td style={{ width: 160, fontWeight: 500, color: 'var(--text-secondary)' }}>ELA Score</td>
               <td style={{ fontWeight: 600, fontFamily: 'var(--font-mono)' }}
                   className={cur?.verdict === 'clean' ? 'status-pass' : 'status-fail'}>
                 {cur?.overall_score?.toFixed(1)}
               </td>
             </tr>
             <tr>
-              <th>Suspicious Regions</th>
+              <td style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Suspicious Regions</td>
               <td>{cur?.suspicious_regions?.length || 0}</td>
             </tr>
             <tr>
-              <th>Verdict</th>
+              <td style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>Verdict</td>
               <td className={cur?.verdict === 'clean' ? 'status-pass' : cur?.verdict === 'suspicious' ? 'status-warn' : 'status-fail'}
                   style={{ fontWeight: 600 }}>
                 {cur?.verdict?.toUpperCase()}
