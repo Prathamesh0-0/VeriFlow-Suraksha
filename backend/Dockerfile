@@ -9,17 +9,25 @@ RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+# Hugging Face Spaces expects a non-root user (UID 1000)
+RUN useradd -m -u 1000 user
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
 
-# Copy requirements and install
+WORKDIR $HOME/app
+
+# Copy requirements and install them
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY . .
+# Copy source code with proper ownership
+COPY --chown=user:user . $HOME/app
 
-# Create necessary directories
-RUN mkdir -p uploads heatmaps && chmod 777 uploads heatmaps
+# Create necessary directories and ensure proper permissions
+RUN mkdir -p uploads heatmaps && chown -R user:user uploads heatmaps
+
+# Switch to the non-root user
+USER user
 
 # Expose port (Hugging Face Spaces defaults to 7860)
 EXPOSE 7860
