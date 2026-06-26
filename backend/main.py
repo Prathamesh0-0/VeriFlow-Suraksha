@@ -28,11 +28,14 @@ import os
 allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "*")
 origins = [origin.strip() for origin in allowed_origins_env.split(",") if origin.strip()]
 
+# FastAPI crashes on startup if allow_origins=["*"] and allow_credentials=True
+allow_creds = "*" not in origins
+
 # ─── CORS (allow frontend access) ───────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=allow_creds,
     allow_methods=["*"],
     allow_headers=["*"],
 )

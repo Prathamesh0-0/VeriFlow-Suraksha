@@ -2,11 +2,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://huggingface.co/spaces/Shameless0-0/veriflow-backend.hf.space/api/:path*"
+      "destination": "https://shameless0-0-veriflow-backend.hf.space/api/:path*"
     },
     {
       "source": "/heatmaps/:path*",
-      "destination": "https://huggingface.co/spaces/Shameless0-0/veriflow-backend.hf.space/heatmaps/:path*"
+      "destination": "https://shameless0-0-veriflow-backend.hf.space/heatmaps/:path*"
     },
     {
       "source": "/(.*)",
