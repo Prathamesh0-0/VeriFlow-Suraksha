@@ -1,0 +1,34 @@
+name: Sync Backend to Hugging Face Space
+
+on:
+  push:
+    branches: [main, master]
+    # Only trigger if changes are made to the backend folder
+    paths:
+      - 'backend/**'
+
+jobs:
+  sync-to-hub:
+    runs-name: Sync to Hugging Face
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          lfs: true
+      
+      - name: Push to Hub
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          # Configure Git
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          
+          # We only want to push the backend folder to the Space's root.
+          # We can use git subtree to push just the backend directory to the Space's main branch.
+          git remote add space https://user:$HF_TOKEN@huggingface.co/spaces/Shameless0-0/veriflow-backend
+          
+          # Force push the backend folder to the main branch of the Hugging Face Space
+          git subtree split --prefix backend -b hf-deploy
+          git push space hf-deploy:main --force

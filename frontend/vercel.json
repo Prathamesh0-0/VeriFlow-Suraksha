@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://<YOUR-HF-SPACE-NAME>.hf.space/api/:path*"
+    },
+    {
+      "source": "/heatmaps/:path*",
+      "destination": "https://<YOUR-HF-SPACE-NAME>.hf.space/heatmaps/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
