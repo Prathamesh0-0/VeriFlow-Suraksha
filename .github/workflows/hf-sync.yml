@@ -9,7 +9,7 @@ on:
 
 jobs:
   sync-to-hub:
-    runs-name: Sync to Hugging Face
+    name: Sync to Hugging Face
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
