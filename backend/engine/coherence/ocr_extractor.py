@@ -7,7 +7,6 @@ No mock data — everything is extracted from real documents.
 from __future__ import annotations
 
 import re
-import os
 import logging
 from pathlib import Path
 from typing import Optional
@@ -127,13 +126,16 @@ def _parse_amount(text: str) -> Optional[float]:
     Handles: ₹1,23,456.78 / Rs. 1,23,456 / 77,400 / 99400 and OCR typos like 'S0,000'.
     """
     clean = text.strip()
-    # Fix common OCR typos in numbers
+    # Strip currency prefixes first (before OCR correction)
+    clean = re.sub(r"[₹$€]|Rs\.?\s*|INR\s*|[ZTCR()]+", "", clean)
+    clean = clean.strip()
+    
+    # Fix common OCR typos in the remaining (now numeric) string
     clean = clean.replace('S', '5').replace('s', '5')
     clean = clean.replace('O', '0').replace('o', '0')
     clean = clean.replace('B', '8')
     clean = clean.replace('l', '1').replace('|', '1')
     
-    clean = re.sub(r"[₹$€]|Rs\.?\s*|INR\s*|[ZTCR()]+", "", clean)
     clean = clean.replace(",", "").strip()
     match = re.search(r"([-+]?\d+\.?\d*)", clean)
     if match:
@@ -492,8 +494,6 @@ def _extract_bank_statement_fields(text: str, doc_name: str) -> list[ExtractedFi
 def extract_fields(
     file_path: str,
     document_name: str,
-    force_mock: bool = False,
-    is_tampered_demo: bool = False,
 ) -> DocumentFields:
     """
     Extract structured financial fields from a document.

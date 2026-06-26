@@ -8,17 +8,13 @@ const API_BASE = '/api';
 /**
  * Upload documents and trigger forensic analysis.
  * @param {File[]} files - Array of File objects to upload
- * @param {string|null} demoMode - "clean" | "tampered" | null
  * @returns {Promise<Object>} ForensicReport
  */
-export async function uploadDocuments(files, demoMode = null) {
+export async function uploadDocuments(files) {
   const formData = new FormData();
   files.forEach((file) => {
     formData.append('files', file);
   });
-  if (demoMode) {
-    formData.append('demo_mode', demoMode);
-  }
 
   const response = await fetch(`${API_BASE}/upload`, {
     method: 'POST',

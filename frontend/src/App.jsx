@@ -13,19 +13,19 @@ function AppShell() {
     <div className="app-shell">
       <header className="app-header no-print">
         <div className="app-logo">
-          <div className="logo-icon">V</div>
-          <div>
-            <div>VeriFlow</div>
-            <div className="logo-sub">Document Forensics Engine</div>
+          <img src="/logo.png" alt="VeriFlow Logo" className="logo-icon" />
+          <div className="logo-text-wrapper">
+            <div className="logo-title">VERIFLOW</div>
+            <div className="logo-sub">Document Forensics</div>
           </div>
         </div>
-        <nav style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <nav style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
           {onReportPage && state.report && (
             <span style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: 11,
-              color: 'var(--text-muted)',
-              marginRight: 8,
+              fontSize: 12,
+              color: '#aaccff',
+              marginRight: 12,
             }}>
               REF: {state.report.packet_id}
             </span>
@@ -34,15 +34,13 @@ function AppShell() {
             to="/"
             style={({ isActive }) => ({
               padding: '6px 12px',
-              borderRadius: 'var(--radius)',
-              fontSize: 12,
-              fontWeight: 500,
+              fontSize: 13,
+              fontWeight: 'bold',
               textDecoration: 'none',
-              color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
-              background: isActive ? 'var(--accent-blue-light)' : 'transparent',
+              color: isActive ? '#ffffff' : '#aaccff',
+              background: isActive ? '#003366' : 'transparent',
               border: '1px solid',
-              borderColor: isActive ? '#bfdbfe' : 'transparent',
-              transition: 'all 0.15s',
+              borderColor: isActive ? '#ffffff' : 'transparent',
             })}
           >
             Upload
@@ -52,15 +50,13 @@ function AppShell() {
               to="/report"
               style={({ isActive }) => ({
                 padding: '6px 12px',
-                borderRadius: 'var(--radius)',
-                fontSize: 12,
-                fontWeight: 500,
+                fontSize: 13,
+                fontWeight: 'bold',
                 textDecoration: 'none',
-                color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                background: isActive ? 'var(--accent-blue-light)' : 'transparent',
+                color: isActive ? '#ffffff' : '#aaccff',
+                background: isActive ? '#003366' : 'transparent',
                 border: '1px solid',
-                borderColor: isActive ? '#bfdbfe' : 'transparent',
-                transition: 'all 0.15s',
+                borderColor: isActive ? '#ffffff' : 'transparent',
               })}
             >
               Report
@@ -68,7 +64,7 @@ function AppShell() {
           )}
           <div className="header-status">
             <div className="status-dot" />
-            Online
+            ONLINE
           </div>
         </nav>
       </header>

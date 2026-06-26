@@ -2,7 +2,6 @@
 VeriFlow Configuration
 Global constants, thresholds, and Indian financial parameters.
 """
-import os
 from pathlib import Path
 
 # ─── Paths ───────────────────────────────────────────────────────────────────

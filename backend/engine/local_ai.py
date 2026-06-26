@@ -9,7 +9,7 @@ a structured report with severity-rated flags.
 from __future__ import annotations
 
 import logging
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, Optional
 
 from engine.models import AIAnalysisResult, AIFlag, Severity
 
@@ -410,7 +410,7 @@ def analyze_extracted_data(extracted_data: Dict[str, Any], document_names: list[
             if flag:
                 flags.append(flag)
                 rules_fired.append(rule_name)
-                logger.info(f"  🚨 Rule FIRED: {rule_name} [{flag.severity.upper()}]")
+                logger.info(f"  🚨 Rule FIRED: {rule_name} [{flag.severity.value.upper()}]")
             else:
                 rules_clean.append(rule_name)
                 logger.debug(f"  ✓ Rule CLEAN: {rule_name}")

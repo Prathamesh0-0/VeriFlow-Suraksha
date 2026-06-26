@@ -4,13 +4,10 @@ Handles multi-file document uploads and dataset packet demos.
 """
 from __future__ import annotations
 
-import os
 import uuid
-import shutil
 from pathlib import Path
-from typing import Optional
 
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form
+from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 
 from config import UPLOAD_DIR, MAX_FILE_SIZE_MB, ALLOWED_MIME_TYPES, DATASET_DIR
@@ -62,7 +59,6 @@ DATASET_PACKETS = {
 @router.post("/upload")
 async def upload_and_analyze(
     files: list[UploadFile] = File(...),
-    demo_mode: Optional[str] = Form(None),
 ):
     """
     Upload documents and execute the full forensic pipeline.
