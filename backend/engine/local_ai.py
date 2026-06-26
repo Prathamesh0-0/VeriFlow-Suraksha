@@ -37,7 +37,6 @@ def _get_field(extracted_data: Dict[str, Any], field_name: str) -> Optional[tupl
                         return doc_name, None
     return None
 
-
 def _get_all_values(extracted_data: Dict[str, Any], field_name: str) -> List[tuple[str, Optional[float]]]:
     """Get all occurrences of a field across documents."""
     results = []
