@@ -25,12 +25,13 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
-          # We only want to push the backend folder to the Space's root.
-          # We can use git subtree to push just the backend directory to the Space's main branch.
-          git remote add space https://user:$HF_TOKEN@huggingface.co/spaces/Shameless0-0/veriflow-backend
-          
-          # Force push the backend folder to the main branch of the Hugging Face Space
-          git subtree split --prefix backend -b hf-deploy
-          git push space hf-deploy:main --force
+          # Instead of subtree split (which pushes history), we create a fresh repo
+          # to ensure old deleted binary files in history aren't pushed to HF.
+          cd backend
+          git init
+          git checkout -b main
+          git add .
+          git commit -m "Sync backend to Hugging Face Space"
+          git push https://user:$HF_TOKEN@huggingface.co/spaces/Shameless0-0/veriflow-backend main --force
 
           
