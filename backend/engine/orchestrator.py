@@ -31,7 +31,11 @@ from config import (
 def _classify_document_type(filename: str) -> DocumentType:
     """Quick document type classification from filename."""
     lower = filename.lower()
-    if any(k in lower for k in ["salary", "pay", "slip"]):
+    if any(k in lower for k in ["nri", "salary"]) and "nri" in lower:
+        return DocumentType.NRI_SALARY_CERT
+    elif any(k in lower for k in ["nri", "bank", "statement"]) and "nri" in lower:
+        return DocumentType.NRI_BANK_STATEMENT
+    elif any(k in lower for k in ["salary", "pay", "slip"]):
         return DocumentType.SALARY_SLIP
     elif any(k in lower for k in ["bank", "statement", "account"]):
         return DocumentType.BANK_STATEMENT
@@ -43,6 +47,43 @@ def _classify_document_type(filename: str) -> DocumentType:
         return DocumentType.ITR_FORM
     elif any(k in lower for k in ["land", "property", "registry", "deed"]):
         return DocumentType.LAND_RECORD
+    elif any(k in lower for k in ["pan", "aadhaar", "adhar", "id_proof", "id"]):
+        return DocumentType.ID_PROOF
+    elif any(k in lower for k in ["cheque", "draft"]):
+        return DocumentType.CHEQUE_DRAFT
+    elif any(k in lower for k in ["aod"]):
+        return DocumentType.AOD_DOCUMENT
+    elif any(k in lower for k in ["rent", "lease", "agreement"]):
+        return DocumentType.RENT_LEASE_AGREEMENT
+    elif any(k in lower for k in ["gst", "gstr"]):
+        return DocumentType.GST_RETURN
+    elif any(k in lower for k in ["compliance", "police", "ed", "court", "freeze"]):
+        return DocumentType.COMPLIANCE_LETTER
+    elif any(k in lower for k in ["death", "heir"]):
+        return DocumentType.DEATH_CERTIFICATE
+    elif any(k in lower for k in ["udyam", "msme"]):
+        return DocumentType.UDYAM_MSME_CERTIFICATE
+    elif any(k in lower for k in ["property tax", "khata"]):
+        return DocumentType.PROPERTY_TAX_RECEIPT
+    elif any(k in lower for k in ["employer", "appointment"]):
+        return DocumentType.EMPLOYER_ID_CARD
+    elif any(k in lower for k in ["net worth", "net_worth", "ca cert"]):
+        return DocumentType.NET_WORTH_CERTIFICATE
+    elif any(k in lower for k in ["vehicle", "rc", "insurance"]):
+        return DocumentType.VEHICLE_RC_INSURANCE
+    elif any(k in lower for k in ["power of attorney", "poa"]):
+        return DocumentType.POWER_OF_ATTORNEY
+    elif any(k in lower for k in ["digital signature", "dsc"]):
+        return DocumentType.DIGITAL_SIGNATURE_CERT
+    elif any(k in lower for k in ["plan approval", "plan_approval"]):
+        return DocumentType.PLAN_APPROVAL
+    elif any(k in lower for k in ["occupancy", "oc "]):
+        return DocumentType.OCCUPANCY_CERTIFICATE
+    elif any(k in lower for k in ["chain"]):
+        return DocumentType.CHAIN_DOCUMENT
+    elif any(k in lower for k in ["address"]):
+        return DocumentType.ADDRESS_PROOF
+    
     return DocumentType.UNKNOWN
 
 
@@ -299,6 +340,43 @@ async def analyze_packet(
         ai_logger = logging.getLogger("veriflow.orchestrator")
         ai_logger.info(f"Running forensic intelligence engine on {len(ai_input_data)} documents...")
         ai_result = local_ai.analyze_extracted_data(ai_input_data, file_names)
+        
+        # ─── Hackathon Specific Rules ──────────────────────────────────────────
+        from engine.models import AIFlag, Severity, DocumentType
+        for doc in document_reports:
+            # 1. Photo Superimposition (Impersonation)
+            if doc.document_type in [DocumentType.ID_PROOF, DocumentType.EMPLOYER_ID_CARD]:
+                if any(ela.overall_score > 20 for ela in doc.ela_results) or doc.ela_results and sum(len(e.suspicious_regions) for e in doc.ela_results) > 0:
+                    ai_result.flags.append(AIFlag(
+                        severity=Severity.CRITICAL,
+                        description="Potential Photo Superimposition or Impersonation detected via compression block mismatch.",
+                        affected_document=doc.document_name
+                    ))
+                    ai_result.suspicion_score += 40
+                    ai_result.is_suspicious = True
+
+            # 2. Signature Forgery / Cheque Fraud
+            if doc.document_type in [DocumentType.CHEQUE_DRAFT, DocumentType.AOD_DOCUMENT, DocumentType.RENT_LEASE_AGREEMENT, DocumentType.POWER_OF_ATTORNEY]:
+                if any(ela.overall_score > 20 for ela in doc.ela_results) or doc.ela_results and sum(len(e.suspicious_regions) for e in doc.ela_results) > 0:
+                    ai_result.flags.append(AIFlag(
+                        severity=Severity.CRITICAL,
+                        description="Potential Signature Forgery or material alteration detected in sensitive legal/financial document.",
+                        affected_document=doc.document_name
+                    ))
+                    ai_result.suspicion_score += 40
+                    ai_result.is_suspicious = True
+                    
+            # 3. Compliance Document Fabrication (Recent Timestamp on old document)
+            if doc.document_type in [DocumentType.COMPLIANCE_LETTER, DocumentType.DEATH_CERTIFICATE, DocumentType.GST_RETURN]:
+                if doc.chronological and (doc.chronological.risk_score > 40 or len(doc.chronological.metadata_flags) > 0):
+                    ai_result.flags.append(AIFlag(
+                        severity=Severity.HIGH,
+                        description="Potential fabricated compliance/government record. Metadata analysis indicates recent digital generation or stripping.",
+                        affected_document=doc.document_name
+                    ))
+                    ai_result.suspicion_score += 30
+                    ai_result.is_suspicious = True
+
         report.ai_analysis = ai_result
         # Also store in AI_TASK_STORE for any polling clients
         AI_TASK_STORE[packet_id] = {"status": "complete", "result": ai_result}

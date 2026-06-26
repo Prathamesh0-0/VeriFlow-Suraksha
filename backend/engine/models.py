@@ -25,6 +25,29 @@ class DocumentType(str, Enum):
     LAND_RECORD = "land_record"
     EMPLOYMENT_VERIFICATION = "employment_verification"
     LOAN_APPLICATION = "loan_application"
+    
+    # New Hackathon Requirements
+    ID_PROOF = "id_proof" # PAN, Aadhaar (Impersonation check)
+    CHEQUE_DRAFT = "cheque_draft" # Signature alteration
+    AOD_DOCUMENT = "aod_document"
+    RENT_LEASE_AGREEMENT = "rent_lease_agreement"
+    GST_RETURN = "gst_return"
+    COMPLIANCE_LETTER = "compliance_letter" # Police, ED, IT, Court
+    DEATH_CERTIFICATE = "death_certificate"
+    UDYAM_MSME_CERTIFICATE = "udyam_msme_certificate"
+    PROPERTY_TAX_RECEIPT = "property_tax_receipt"
+    EMPLOYER_ID_CARD = "employer_id_card"
+    NET_WORTH_CERTIFICATE = "net_worth_certificate"
+    VEHICLE_RC_INSURANCE = "vehicle_rc_insurance"
+    POWER_OF_ATTORNEY = "power_of_attorney"
+    DIGITAL_SIGNATURE_CERT = "digital_signature_cert"
+    PLAN_APPROVAL = "plan_approval"
+    OCCUPANCY_CERTIFICATE = "occupancy_certificate"
+    CHAIN_DOCUMENT = "chain_document"
+    ADDRESS_PROOF = "address_proof"
+    NRI_SALARY_CERT = "nri_salary_cert"
+    NRI_BANK_STATEMENT = "nri_bank_statement"
+    
     UNKNOWN = "unknown"
 
 
