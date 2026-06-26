@@ -6,7 +6,8 @@
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
-/**
+
+/*
  * Upload documents and trigger forensic analysis.
  * @param {File[]} files - Array of File objects to upload
  * @returns {Promise<Object>} ForensicReport
