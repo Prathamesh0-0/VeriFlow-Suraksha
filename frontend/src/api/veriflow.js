@@ -3,7 +3,12 @@
  * Handles communication with the FastAPI backend.
  */
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+// Auto-detect if running on localhost. If on Vercel (production), bypass Vercel's 4.5MB 
+// proxy upload limit by communicating directly with the Hugging Face backend.
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const PROD_BACKEND = 'https://shameless0-0-veriflow-backend.hf.space';
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (isLocal ? '' : PROD_BACKEND);
 const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
 
 
