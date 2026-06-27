@@ -218,7 +218,6 @@ function DocumentSection({ docReport, index }) {
               )}
             </div>
           </div>
-        </div>
       </div>
     </div>
   );
