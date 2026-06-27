@@ -212,19 +212,21 @@ def _generate_heatmap(
             color = (0, 0, 255) if region.severity == Severity.HIGH else (0, 165, 255)
             cv2.rectangle(blended, (x0, y0), (x1, y1), color, 2)
 
-        # Save files
-        heatmap_path = str(HEATMAP_DIR / f"{base_name}_p{page}_ela_{uid}.png")
-        original_path = str(HEATMAP_DIR / f"{base_name}_p{page}_orig_{uid}.png")
-
-        cv2.imwrite(heatmap_path, blended)
-
-        # Save a scaled-down original for frontend display
+        # Scale down both original and blended images for reasonable file sizes
         scale_factor = min(1.0, 1200 / max(original.shape[1], 1))
         if scale_factor < 1.0:
-            resized = cv2.resize(original, None, fx=scale_factor, fy=scale_factor)
-            cv2.imwrite(original_path, resized)
+            resized_blend = cv2.resize(blended, None, fx=scale_factor, fy=scale_factor)
+            resized_orig = cv2.resize(original, None, fx=scale_factor, fy=scale_factor)
         else:
-            cv2.imwrite(original_path, original)
+            resized_blend = blended
+            resized_orig = original
+
+        # Save files as JPG with 80% quality (reduces 14MB PNG to ~150KB JPEG)
+        heatmap_path = str(HEATMAP_DIR / f"{base_name}_p{page}_ela_{uid}.jpg")
+        original_path = str(HEATMAP_DIR / f"{base_name}_p{page}_orig_{uid}.jpg")
+
+        cv2.imwrite(heatmap_path, resized_blend, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+        cv2.imwrite(original_path, resized_orig, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
         return heatmap_path, original_path
 
