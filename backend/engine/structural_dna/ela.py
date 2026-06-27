@@ -168,6 +168,14 @@ def _identify_suspicious_regions(
     return regions
 
 
+import re
+
+def _sanitize_filename(name: str) -> str:
+    # Keep only ASCII alphanumeric characters, underscores, and dashes
+    sanitized = re.sub(r'[^a-zA-Z0-9_\-]', '_', name)
+    sanitized = re.sub(r'_+', '_', sanitized)
+    return sanitized.strip('_')
+
 def _generate_heatmap(
     ela_scaled: np.ndarray,
     original: np.ndarray,
@@ -181,7 +189,10 @@ def _generate_heatmap(
     """
     try:
         uid = uuid.uuid4().hex[:8]
-        base_name = Path(document_name).stem
+        raw_stem = Path(document_name).stem
+        base_name = _sanitize_filename(raw_stem)
+        if not base_name:
+            base_name = "document"
 
         # Convert ELA to grayscale for heatmap
         ela_gray = cv2.cvtColor(ela_scaled, cv2.COLOR_BGR2GRAY)
