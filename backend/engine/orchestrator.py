@@ -16,6 +16,7 @@ from engine.models import (
     ForensicReport,
     Severity,
     Verdict,
+    AIFlag,
 )
 from engine.structural_dna import syntax_geometry, chronological, ela
 from engine.coherence import ocr_extractor, cross_document, tax_logic
@@ -342,7 +343,6 @@ async def analyze_packet(
         ai_result = local_ai.analyze_extracted_data(ai_input_data, file_names)
         
         # ─── Hackathon Specific Rules ──────────────────────────────────────────
-        from engine.models import AIFlag, Severity, DocumentType
         for doc in document_reports:
             # 1. Photo Superimposition (Impersonation)
             if doc.document_type in [DocumentType.ID_PROOF, DocumentType.EMPLOYER_ID_CARD]:
