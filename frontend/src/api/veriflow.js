@@ -7,9 +7,10 @@
 // proxy upload limit by communicating directly with the Hugging Face backend.
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const PROD_BACKEND = 'https://shameless0-0-veriflow-backend.hf.space';
+const LOCAL_BACKEND = 'http://localhost:8000';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (isLocal ? '' : PROD_BACKEND);
-const API_BASE = BACKEND_URL ? `${BACKEND_URL}/api` : '/api';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || (isLocal ? LOCAL_BACKEND : PROD_BACKEND);
+const API_BASE = `${BACKEND_URL}/api`;
 
 
 /*

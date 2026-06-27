@@ -14,7 +14,9 @@ export default function ELAViewer({ report }) {
   return (
     <div style={{ marginBottom: 20 }}>
       <div className="section-title">Error Level Analysis (ELA)</div>
-      <div className="panel">
+      
+      {/* SCREEN UI - Interactive Tabs */}
+      <div className="panel hide-on-print">
         {allELA.length > 1 && (
           <div style={{ marginBottom: 12, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             {allELA.map((e, i) => (
@@ -73,6 +75,34 @@ export default function ELAViewer({ report }) {
             </tr>
           </tbody>
         </table>
+      </div>
+
+      {/* PRINT UI - Shows ALL Heatmaps */}
+      <div className="print-only">
+        {allELA.map((ela, i) => (
+          <div key={i} className="panel" style={{ marginBottom: 20, pageBreakInside: 'avoid' }}>
+            <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14 }}>
+              {ela.docName} (Page {ela.page})
+            </div>
+            <div style={{ display: 'flex', gap: 16, marginBottom: 12 }}>
+               <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 4, color: '#555' }}>ORIGINAL</div>
+                  {ela.original_image_path ? (
+                    <img src={getHeatmapUrl(ela.original_image_path)} style={{ maxWidth: '100%', maxHeight: 350, border: '1px solid #ccc' }} />
+                  ) : <div style={{ color: '#999', fontSize: 10 }}>N/A</div>}
+               </div>
+               <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 10, fontWeight: 600, marginBottom: 4, color: '#555' }}>ELA HEATMAP</div>
+                  {ela.heatmap_path ? (
+                    <img src={getHeatmapUrl(ela.heatmap_path)} style={{ maxWidth: '100%', maxHeight: 350, border: '1px solid #ccc' }} />
+                  ) : <div style={{ color: '#999', fontSize: 10 }}>N/A</div>}
+               </div>
+            </div>
+            <div style={{ fontSize: 12 }}>
+              <strong>Score:</strong> {ela.overall_score?.toFixed(1)} | <strong>Suspicious Regions:</strong> {ela.suspicious_regions?.length || 0} | <strong>Verdict:</strong> {ela.verdict?.toUpperCase()}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

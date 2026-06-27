@@ -817,7 +817,15 @@ html, body {
 /* ─── Print Styles ───────────────────────────────────────────────────────── */
 @media print {
   .no-print { display: none !important; }
+  .hide-on-print { display: none !important; }
+  .print-only { display: block !important; }
+  .print-always { display: block !important; }
   body { background: white; color: black; }
   .app-content { border: none; padding: 0; }
   .panel { border: 1px solid #000; margin-bottom: 15px; page-break-inside: avoid; }
+}
+
+@media screen {
+  .print-only { display: none !important; }
+  .hide-on-screen { display: none !important; }
 }

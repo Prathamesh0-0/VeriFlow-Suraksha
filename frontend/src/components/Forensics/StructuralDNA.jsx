@@ -73,9 +73,8 @@ function DocumentSection({ docReport, index }) {
         </div>
       </div>
 
-      {open && (
-        <div className="doc-accordion-body">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div className={`doc-accordion-body ${!open ? 'hide-on-screen' : ''} print-always`}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
 
             {/* Left: Structural Anomalies */}
             <div>
@@ -220,7 +219,7 @@ function DocumentSection({ docReport, index }) {
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
