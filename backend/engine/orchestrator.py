@@ -387,6 +387,19 @@ async def analyze_packet(
                 ai_result.suspicion_score += 35
                 ai_result.is_suspicious = True
 
+            # 5. Digital Vector PDF Alteration (PDF Editor Tool or Syntax Shift)
+            has_suspicious_tool = doc.chronological and doc.chronological.tool_suspicious
+            has_syntax_anomalies = doc.syntax_geometry and doc.syntax_geometry.risk_score >= 30
+            
+            if has_suspicious_tool or has_syntax_anomalies:
+                ai_result.flags.append(AIFlag(
+                    severity=Severity.CRITICAL,
+                    description="Digital PDF Alteration detected. The document was generated or modified using a consumer PDF editor (e.g., Acrobat, Sejda) or contains syntax geometry anomalies (font subset mismatches, baseline coordinate drifts) typical of copy-pasted text boxes.",
+                    affected_document=doc.document_name
+                ))
+                ai_result.suspicion_score += 45
+                ai_result.is_suspicious = True
+
         report.ai_analysis = ai_result
         # Also store in AI_TASK_STORE for any polling clients
         AI_TASK_STORE[packet_id] = {"status": "complete", "result": ai_result}
