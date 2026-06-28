@@ -526,6 +526,21 @@ def extract_fields(
     else:
         fields = []
 
+    # ─── Scribble / Physical Tampering Detection ────────────────────────────
+    # Look for dense clusters of non-alphanumeric characters, typical of OCR
+    # trying to read scribbles or physical pen marks (like crossing out text).
+    condensed = re.sub(r'\s+', '', text)
+    if len(condensed) > 50:
+        special_chars = len(re.findall(r'[^a-zA-Z0-9\.,\-₹$€\(\)]', condensed))
+        ratio = special_chars / len(condensed)
+        if ratio > 0.05:  # If more than 5% of the document is garbled characters
+            fields.append(ExtractedField(
+                field_name="__physical_tampering_flag",
+                value="True",
+                confidence=ratio,
+                source_document=document_name,
+            ))
+
     logger.info(f"Extracted {len(fields)} fields from {document_name} (type: {doc_type.value})")
     return DocumentFields(
         document_name=document_name,

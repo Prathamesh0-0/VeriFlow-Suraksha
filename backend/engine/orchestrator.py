@@ -377,6 +377,16 @@ async def analyze_packet(
                     ai_result.suspicion_score += 30
                     ai_result.is_suspicious = True
 
+            # 4. Physical Alteration / Ink Scribbling
+            if doc.extracted_fields and any(f.field_name == "__physical_tampering_flag" for f in doc.extracted_fields.fields):
+                ai_result.flags.append(AIFlag(
+                    severity=Severity.HIGH,
+                    description="Potential physical alteration detected. High density of garbled/special characters indicates scribbling or writing over printed text with a pen before scanning.",
+                    affected_document=doc.document_name
+                ))
+                ai_result.suspicion_score += 35
+                ai_result.is_suspicious = True
+
         report.ai_analysis = ai_result
         # Also store in AI_TASK_STORE for any polling clients
         AI_TASK_STORE[packet_id] = {"status": "complete", "result": ai_result}
